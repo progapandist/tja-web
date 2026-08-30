@@ -61,9 +61,11 @@ test("the locale pages are identical to the root page", () => {
   for (const page of rest) expect(page).toBe(root);
 });
 
-// The page you get when a file is missing must not itself need a file.
-test("the 404 page depends on nothing", () => {
-  expect(urlsIn(readFileSync("dist/404.html", "utf8"))).toEqual([]);
+// The page you get when a file is missing must not itself need a file. A link
+// back to the site is fine; a stylesheet or a script is not.
+test("the 404 page depends on no assets", () => {
+  const referenced = urlsIn(readFileSync("dist/404.html", "utf8")).filter((url) => url !== "/");
+  expect(referenced).toEqual([]);
 });
 
 // index.html decides which translation to fetch before any module loads, so it
