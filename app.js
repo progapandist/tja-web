@@ -440,8 +440,10 @@ find("#stem").setAttribute("aria-label", t.stemsLabel);
 find("#focus").firstChild.textContent = t.search + " ";
 themeButton.setAttribute("aria-label", t.themeLabel);
 find("#locale").setAttribute("aria-label", t.languageLabel);
+// Two complete strings rather than one with words hidden: shortening Russian
+// by chopping the front leaves the case ending stranded.
 find(".contrib.nerdy").innerHTML =
-  `<span class="wide-only">${t.terminalLong}</span>${t.terminalShort}`;
+  `<span class="wide-only">${t.terminalLong}</span><span class="narrow-only">${t.terminalShort}</span>`;
 find(".contrib:not(.nerdy)").textContent = t.contribute;
 
 // Two links rather than a toggle: switching language is a navigation, and a
