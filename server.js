@@ -16,7 +16,8 @@ const server = Bun.serve({
   async fetch(req, server) {
     const path = new URL(req.url).pathname;
     if (path === "/live") return server.upgrade(req) ? undefined : new Response("expected websocket", { status: 400 });
-    if (path === "/" || path === "/index.html") {
+    // Mirrors _redirects: the locale lives in the path, the page is the same.
+    if (path === "/" || path === "/index.html" || /^\/(en|ru)(\/|$)/.test(path)) {
       return new Response((await Bun.file("index.html").text()) + live, {
         headers: { "content-type": "text/html; charset=utf-8" },
       });

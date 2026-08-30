@@ -87,3 +87,39 @@ export function search(verbs, query) {
   }
   return scored.sort((a, b) => a[1] - b[1]).map(([v]) => v);
 }
+
+// verbs.ru.txt carries only the parts that are not German: the stem gloss and,
+// per verb, the meaning, the colloquial note and the example's translation.
+// Everything else on the card is the same in both languages.
+//
+//   =stem|gloss
+//   verb|official|colloquial|example translation
+export function translate(stems, raw) {
+  // A couple of names occur twice on purpose — übersetzen and umgehen are each
+  // a separable and an inseparable verb spelled alike — so translations are
+  // handed out in file order rather than looked up by name alone.
+  const pending = new Map();
+  for (const stem of stems) {
+    for (const verb of stem.verbs) {
+      if (!pending.has(verb.name)) pending.set(verb.name, []);
+      pending.get(verb.name).push(verb);
+    }
+  }
+
+  for (const line of raw.split("\n")) {
+    const l = line.trim();
+    if (!l || l.startsWith("#")) continue;
+    const f = l.split("|");
+    if (l.startsWith("=")) {
+      const stem = stems.find((s) => s.name === f[0].slice(1));
+      if (stem) stem.gloss = f[1];
+      continue;
+    }
+    const verb = pending.get(f[0])?.shift();
+    if (!verb) continue;
+    if (f[1]) verb.official = f[1];
+    if (f[2]) verb.colloquial = f[2];
+    if (f[3]) verb.english = f[3];
+  }
+  return stems;
+}

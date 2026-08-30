@@ -204,6 +204,23 @@ h1 {
 
 #hits li:hover span { color: var(--ink); }
 
+.locale {
+  display: flex;
+  gap: 2px;
+}
+
+.locale a {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--dim);
+  text-decoration: none;
+  border: var(--hair);
+  padding: 5px 9px;
+}
+
+.locale a:hover { color: var(--ink); border-color: var(--ink); }
+.locale a.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
 .theme {
   font: inherit;
   font-size: 12px;

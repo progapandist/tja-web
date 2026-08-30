@@ -1,6 +1,6 @@
 import { expect, test, beforeAll } from "bun:test";
 import { JSDOM } from "jsdom";
-import { parse, forms, nebensatz, search } from "./data.js";
+import { parse, forms, nebensatz, search, translate } from "./data.js";
 
 const raw = await Bun.file("verbs.txt").text();
 const stems = parse(raw);
@@ -32,6 +32,24 @@ test("search ignores umlauts, spelled either way", () => {
   expect(names("mitneh")[0]).toBe("mitnehmen"); // a query spanning prefix and stem
   expect(names("lift")).toContain("mitnehmen"); // and meanings count too
   expect(names("xqzz")).toEqual([]);
+});
+
+// Every verb and stem has a Russian counterpart, including the two names that
+// appear twice: übersetzen and umgehen are each a separable and an inseparable
+// verb spelled the same way, and they must not swap translations.
+test("the Russian layer covers the data and keeps the homographs apart", async () => {
+  const ru = await Bun.file("verbs.ru.txt").text();
+  const translated = translate(parse(raw), ru);
+  const all = translated.flatMap((stem) => stem.verbs);
+
+  expect(translated.every((stem) => /[а-яё]/i.test(stem.gloss))).toBe(true);
+  const untranslated = all.filter((verb) => !/[а-яё]/i.test(verb.official));
+  expect(untranslated.map((verb) => verb.name)).toEqual([]);
+  expect(all.every((verb) => /[а-яё]/i.test(verb.english))).toBe(true);
+
+  const [textual, ferry] = all.filter((verb) => verb.name === "übersetzen");
+  expect(textual.official).toContain("переводить");
+  expect(ferry.official).toContain("переправ");
 });
 
 // ---- the app, mounted in a DOM ----

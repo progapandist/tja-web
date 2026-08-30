@@ -1,0 +1,5 @@
+# /en and /ru are the same page; app.js reads the locale off the path.
+/en     /index.html   200
+/en/*   /index.html   200
+/ru     /index.html   200
+/ru/*   /index.html   200

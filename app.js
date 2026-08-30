@@ -1,9 +1,14 @@
-import { parse, prefixOf, forms, nebensatz, search, collate } from "./data.js";
+import { parse, prefixOf, forms, nebensatz, search, collate, translate } from "./data.js";
+import { localeFromPath, locales, ui } from "./strings.js";
 
 // index.html kicks this off while it is still parsing; falling back keeps the
 // module usable on its own, which is how the tests load it.
-const raw = await (globalThis.verbsText ?? fetch("verbs.txt").then((r) => r.text()));
+const locale = localeFromPath(globalThis.location?.pathname ?? "/");
+const t = ui[locale];
+
+const raw = await (globalThis.verbsText ?? fetch("/verbs.txt").then((r) => r.text()));
 const stems = parse(raw).sort((a, b) => collate(a.name, b.name));
+if (globalThis.verbsRu) translate(stems, await globalThis.verbsRu);
 const verbs = stems.flatMap((stem) => stem.verbs);
 const byName = new Map(verbs.map((verb) => [verb.name, verb]));
 const prefixes = [...new Set(verbs.map(prefixOf))].sort(collate);
@@ -200,11 +205,11 @@ const escape = (text) => text.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&l
 function cardHTML(verb) {
   const { present, past, perfect } = forms(verb);
   const prefix = prefixOf(verb);
-  const kind = !prefix ? "base verb" : verb.sep ? "separable" : "inseparable";
-  const reveal = '<button class="primary reveal" type="button">Reveal <kbd>enter</kbd></button>';
+  const kind = !prefix ? t.base : verb.sep ? t.separable : t.inseparable;
+  const reveal = `<button class="primary reveal" type="button">${t.reveal} <kbd>enter</kbd></button>`;
 
   return `
-    <p class="prompt">What does it mean?</p>
+    <p class="prompt">${t.prompt}</p>
     <h2 class="word">${prefix ? `<b>${escape(prefix)}</b>` : ""}${escape(verb.stem.name)}</h2>
     <div class="answer">
       <p class="gloss">${escape(verb.official)}</p>
@@ -214,12 +219,12 @@ function cardHTML(verb) {
         <li class="use">${escape(verb.use)}</li>
       </ul>
       <dl class="forms">
-        <dt>present</dt><dd>er/sie ${escape(present)}</dd>
-        <dt>past</dt><dd>er/sie ${escape(past)}</dd>
-        <dt>perfect</dt><dd>er/sie ${escape(perfect)}</dd>
-        <dt>subclause</dt><dd>${escape(nebensatz(verb))}</dd>
+        <dt>${t.present}</dt><dd>er/sie ${escape(present)}</dd>
+        <dt>${t.past}</dt><dd>er/sie ${escape(past)}</dd>
+        <dt>${t.perfect}</dt><dd>er/sie ${escape(perfect)}</dd>
+        <dt>${t.subclause}</dt><dd>${escape(nebensatz(verb))}</dd>
       </dl>
-      <h3>In the wild</h3>
+      <h3>${t.inTheWild}</h3>
       <p class="colloquial">${escape(verb.colloquial)}</p>
       <blockquote><p lang="de">${escape(verb.example)}</p><p class="en">${escape(verb.english)}</p></blockquote>
     </div>
@@ -244,8 +249,8 @@ function render({ reposition = false, turns = 0 } = {}) {
     stemColumn.moveTo(stemList.indexOf(state.stem), turns, 1150);
   }
 
-  find("#spin").firstChild.textContent = state.testing ? "Next card " : "Random verb ";
-  find("#test").firstChild.textContent = state.testing ? "Back to list " : "I’m feeling lucky ";
+  find("#spin").firstChild.textContent = (state.testing ? t.nextCard : t.randomVerb) + " ";
+  find("#test").firstChild.textContent = (state.testing ? t.backToList : t.lucky) + " ";
   find("#spin").classList.toggle("primary", state.testing);
   find("#test").classList.toggle("primary", !state.testing);
   find("#card").innerHTML = cardHTML(selectedVerb());
@@ -403,7 +408,7 @@ function currentTheme() {
 }
 
 function labelTheme() {
-  themeButton.textContent = currentTheme() === "dark" ? "light" : "dark";
+  themeButton.textContent = currentTheme() === "dark" ? t.light : t.dark;
 }
 
 themeButton.onclick = () => {
@@ -420,5 +425,35 @@ themeButton.onclick = () => {
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", labelTheme);
 labelTheme();
 
-find("#count").textContent = `${verbs.length} verbs`;
+// Everything the locale decides that is not drawn by render().
+document.documentElement.lang = t.lang;
+document.title = t.title;
+document.querySelector('meta[name="description"]').content = t.description;
+find("#count").textContent = t.count(verbs.length);
+find("#t-prefix").textContent = t.prefix;
+find("#t-stem").textContent = t.stem;
+query.placeholder = t.searchPlaceholder;
+query.setAttribute("aria-label", t.searchLabel);
+results.setAttribute("aria-label", t.resultsLabel);
+find("#prefix").setAttribute("aria-label", t.prefixesLabel);
+find("#stem").setAttribute("aria-label", t.stemsLabel);
+find("#focus").firstChild.textContent = t.search + " ";
+themeButton.setAttribute("aria-label", t.themeLabel);
+find("#locale").setAttribute("aria-label", t.languageLabel);
+find(".contrib.nerdy").innerHTML =
+  `<span class="wide-only">${t.terminalLong}</span>${t.terminalShort}`;
+find(".contrib:not(.nerdy)").textContent = t.contribute;
+
+// Two links rather than a toggle: switching language is a navigation, and a
+// reload here costs nothing that is not already cached.
+find("#locale").replaceChildren(
+  ...locales.map((code) => {
+    const link = document.createElement("a");
+    link.href = code === "en" ? "/" : `/${code}`;
+    link.textContent = code.toUpperCase();
+    link.className = code === locale ? "on" : "";
+    if (code === locale) link.setAttribute("aria-current", "true");
+    return link;
+  }),
+);
 render({ reposition: true });
