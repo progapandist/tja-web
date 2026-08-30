@@ -203,6 +203,14 @@ test("no two indexed pages share a title or a description", () => {
   for (const description of descriptions) expect(description.length).toBeLessThan(320);
 });
 
+// Search Console drops the property if this file stops answering, and nothing
+// else in the build would notice: it is referenced by no page.
+test("the search console verification file ships", () => {
+  const token = "googlec2338afcce487655.html";
+  expect(existsSync(`dist/${token}`)).toBe(true);
+  expect(read(`dist/${token}`)).toContain(`google-site-verification: ${token}`);
+});
+
 test("the sitemap lists every indexed page and robots points at it", () => {
   const sitemap = read("dist/sitemap.xml");
   for (const code of locales) {

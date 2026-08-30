@@ -3,7 +3,8 @@ PROJECT ?= tja
 # The files the browser needs. Everything else — tests, docs, node_modules —
 # stays out of the upload. og.html is the source for og.png and does not ship.
 FILES := index.html 404.html style.css app.js data.js strings.js robots.txt og.png \
-         verbs.txt verbs.ru.txt verbs.fr.txt _headers
+         verbs.txt verbs.ru.txt verbs.fr.txt _headers \
+         googlec2338afcce487655.html
 
 .PHONY: dev test dist deploy og preview clean
 
