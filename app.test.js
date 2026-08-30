@@ -150,6 +150,28 @@ test("spinning lands on a real verb, every time", () => {
   expect(seen.size).toBeGreaterThan(30); // random, not stuck
 });
 
+// Switching language must not throw away the card being read: the picker
+// carries it in the URL, and the links follow the reader as they browse.
+test("the locale links carry the current card", () => {
+  const href = () => win.document.querySelector('#locale a[data-code="ru"]').href;
+
+  win.document.querySelector("#spin").click();
+  const browsing = new URL(href());
+  expect(browsing.pathname).toBe("/ru/");
+  expect(browsing.searchParams.get("verb")).toBe(word());
+  expect(browsing.searchParams.get("mode")).toBeNull();
+
+  win.document.querySelector("#test").click();
+  const guessing = new URL(href());
+  expect(guessing.searchParams.get("verb")).toBe(word());
+  expect(guessing.searchParams.get("mode")).toBe("guess");
+
+  win.document.querySelector(".reveal").click();
+  expect(new URL(href()).searchParams.get("mode")).toBe("cards");
+
+  win.document.querySelector("#test").click();
+});
+
 test("test mode is the one-armed bandit, and hides the meaning until revealed", () => {
   expect(items("prefix").length).toBe(shown("prefix").length); // browse: one copy
   win.document.querySelector("#test").click();

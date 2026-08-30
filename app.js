@@ -30,6 +30,26 @@ const state = {
 
 const selectedVerb = () => byName.get(state.prefix + state.stem.name);
 
+// The locale picker hands the current card over in the URL, so switching
+// language keeps you on the word you were reading rather than dropping you
+// back at the start. An unknown or missing verb just falls through.
+const params = new URLSearchParams(globalThis.location?.search ?? "");
+const asked = byName.get(params.get("verb") ?? "");
+if (asked) {
+  state.prefix = prefixOf(asked);
+  state.stem = asked.stem;
+}
+if (params.get("mode") === "cards" || params.get("mode") === "guess") {
+  state.testing = true;
+  state.revealed = params.get("mode") === "cards";
+}
+
+function hrefFor(code) {
+  const query = new URLSearchParams({ verb: selectedVerb().name });
+  if (state.testing) query.set("mode", state.revealed ? "cards" : "guess");
+  return `${code === "en" ? "/" : `/${code}/`}?${query}`;
+}
+
 // Each column shows only what pairs with the other column's selection, so
 // every combination you can land on is a real word.
 const prefixOptions = () => prefixes.filter((prefix) => isWord(prefix, state.stem));
@@ -253,6 +273,7 @@ function render({ reposition = false, turns = 0 } = {}) {
   find("#test").firstChild.textContent = (state.testing ? t.backToList : t.lucky) + " ";
   find("#spin").classList.toggle("primary", state.testing);
   find("#test").classList.toggle("primary", !state.testing);
+  for (const link of localeLinks) link.href = hrefFor(link.dataset.code);
   find("#card").innerHTML = cardHTML(selectedVerb());
   find("#card").querySelector(".reveal")?.addEventListener("click", reveal);
 }
@@ -365,7 +386,6 @@ function toggleTesting() {
 
 find("#spin").onclick = nextCard;
 find("#test").onclick = toggleTesting;
-find("#focus").onclick = () => query.focus();
 
 addEventListener("keydown", (event) => {
   const focused = event.target.tagName;
@@ -449,7 +469,6 @@ query.setAttribute("aria-label", t.searchLabel);
 results.setAttribute("aria-label", t.resultsLabel);
 find("#prefix").setAttribute("aria-label", t.prefixesLabel);
 find("#stem").setAttribute("aria-label", t.stemsLabel);
-find("#focus").firstChild.textContent = t.search + " ";
 themeButton.setAttribute("aria-label", t.themeLabel);
 find("#locale").setAttribute("aria-label", t.languageLabel);
 // Two complete strings rather than one with words hidden: shortening Russian
@@ -460,14 +479,14 @@ find(".contrib:not(.nerdy)").textContent = t.contribute;
 
 // Two links rather than a toggle: switching language is a navigation, and a
 // reload here costs nothing that is not already cached.
-find("#locale").replaceChildren(
-  ...locales.map((code) => {
-    const link = document.createElement("a");
-    link.href = code === "en" ? "/" : `/${code}/`; // the trailing slash avoids a redirect
-    link.textContent = code.toUpperCase();
-    link.className = code === locale ? "on" : "";
-    if (code === locale) link.setAttribute("aria-current", "true");
-    return link;
-  }),
-);
+const localeLinks = locales.map((code) => {
+  const link = document.createElement("a");
+  link.dataset.code = code;
+  link.textContent = code.toUpperCase();
+  link.className = code === locale ? "on" : "";
+  if (code === locale) link.setAttribute("aria-current", "true");
+  return link;
+});
+find("#locale").replaceChildren(...localeLinks);
+
 render({ reposition: true });

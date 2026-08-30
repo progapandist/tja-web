@@ -58,7 +58,6 @@ export const ui = {
     nextCard: "Next card",
     lucky: "I’m feeling lucky",
     backToList: "Back to list",
-    search: "Search",
     reveal: "Reveal",
   },
   ru: {
@@ -87,7 +86,6 @@ export const ui = {
     nextCard: "Ещё",
     lucky: "Мне повезёт",
     backToList: "К списку",
-    search: "Поиск",
     reveal: "Показать",
   },
 };
