@@ -203,19 +203,20 @@ test("the locale links carry the current card", () => {
   win.document.querySelector("#test").click();
 });
 
-// The spin button and space bar share one slot in test mode: the first press
-// answers the question on screen, the second rolls a new one.
-test("the spin button reveals before it rolls", () => {
+// The spin button is a next button and nothing else. Revealing belongs to the
+// button under the verb, so the label never has to track what the last press did.
+test("the spin button rolls whether or not the card is turned over", () => {
+  const label = () => win.document.querySelector("#spin").firstChild.textContent.trim();
   win.document.querySelector("#test").click();
   expect(win.document.querySelector(".reveal")).not.toBeNull();
+  const hidden = label();
 
   win.document.querySelector("#spin").click();
-  expect(win.document.body.classList.contains("revealed")).toBe(true);
-  expect(win.document.querySelector(".reveal")).toBeNull();
-
-  win.document.querySelector("#spin").click();
-  expect(win.document.querySelector(".reveal")).not.toBeNull(); // a fresh, hidden card
+  expect(win.document.querySelector(".reveal")).not.toBeNull(); // rolled, still hidden
   expect(win.document.body.classList.contains("revealed")).toBe(false);
+
+  win.document.querySelector(".reveal").click();
+  expect(label()).toBe(hidden); // turning the card over leaves the label alone
 
   win.document.querySelector("#test").click();
 });

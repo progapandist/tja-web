@@ -228,7 +228,7 @@ function cardHTML(verb) {
   const { present, past, perfect } = forms(verb);
   const prefix = prefixOf(verb);
   const kind = !prefix ? t.base : verb.sep ? t.separable : t.inseparable;
-  const reveal = `<button class="primary reveal" type="button">${t.reveal} <kbd>space / enter</kbd></button>`;
+  const reveal = `<button class="primary reveal" type="button">${t.reveal} <kbd>enter</kbd></button>`;
 
   return `
     <p class="prompt">${t.prompt}</p>
@@ -271,8 +271,7 @@ function render({ reposition = false, turns = 0 } = {}) {
     stemColumn.moveTo(stemList.indexOf(state.stem), turns, 1150);
   }
 
-  const spinLabel = state.testing ? (state.revealed ? t.nextCard : t.reveal) : t.randomVerb;
-  find("#spin").firstChild.textContent = spinLabel + " ";
+  find("#spin").firstChild.textContent = (state.testing ? t.nextCard : t.randomVerb) + " ";
   find("#test").firstChild.textContent = (state.testing ? t.backToList : t.lucky) + " ";
   find("#spin").classList.toggle("primary", state.testing);
   find("#test").classList.toggle("primary", !state.testing);
@@ -294,12 +293,6 @@ function nextCard() {
   render({ reposition: true, turns: 3 });
 }
 
-// The spin button and space bar share one slot: reveal the card first, then
-// roll the next one, so guessing takes the same key both presses ask for.
-function spinOrReveal() {
-  if (state.testing && !state.revealed) reveal();
-  else nextCard();
-}
 
 // ---- search ----------------------------------------------------------------
 const query = find("#q");
@@ -394,7 +387,7 @@ function toggleTesting() {
   render({ reposition: true, turns: state.testing ? 3 : 0 });
 }
 
-find("#spin").onclick = spinOrReveal;
+find("#spin").onclick = nextCard;
 find("#test").onclick = toggleTesting;
 
 addEventListener("keydown", (event) => {
@@ -407,7 +400,7 @@ addEventListener("keydown", (event) => {
   // The columns are tabbable, but with focus nowhere they still answer the
   // arrows: up and down work the stems, left and right the prefixes.
   const shortcuts = {
-    " ": spinOrReveal,
+    " ": nextCard,
     t: toggleTesting,
     Enter: () => state.testing && !state.revealed && reveal(),
     ArrowDown: () => stemColumn.step(1),
