@@ -271,7 +271,8 @@ function render({ reposition = false, turns = 0 } = {}) {
     stemColumn.moveTo(stemList.indexOf(state.stem), turns, 1150);
   }
 
-  find("#spin").firstChild.textContent = (state.testing ? t.nextCard : t.randomVerb) + " ";
+  const spinLabel = state.testing ? (state.revealed ? t.nextCard : t.reveal) : t.randomVerb;
+  find("#spin").firstChild.textContent = spinLabel + " ";
   find("#test").firstChild.textContent = (state.testing ? t.backToList : t.lucky) + " ";
   find("#spin").classList.toggle("primary", state.testing);
   find("#test").classList.toggle("primary", !state.testing);
@@ -291,6 +292,13 @@ function nextCard() {
   state.stem = verb.stem;
   state.revealed = !state.testing;
   render({ reposition: true, turns: 3 });
+}
+
+// The spin button and space bar share one slot: reveal the card first, then
+// roll the next one, so guessing takes the same key both presses ask for.
+function spinOrReveal() {
+  if (state.testing && !state.revealed) reveal();
+  else nextCard();
 }
 
 // ---- search ----------------------------------------------------------------
@@ -386,7 +394,7 @@ function toggleTesting() {
   render({ reposition: true, turns: state.testing ? 3 : 0 });
 }
 
-find("#spin").onclick = nextCard;
+find("#spin").onclick = spinOrReveal;
 find("#test").onclick = toggleTesting;
 
 addEventListener("keydown", (event) => {
@@ -399,7 +407,7 @@ addEventListener("keydown", (event) => {
   // The columns are tabbable, but with focus nowhere they still answer the
   // arrows: up and down work the stems, left and right the prefixes.
   const shortcuts = {
-    " ": nextCard,
+    " ": spinOrReveal,
     t: toggleTesting,
     Enter: () => state.testing && !state.revealed && reveal(),
     ArrowDown: () => stemColumn.step(1),

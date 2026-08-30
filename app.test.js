@@ -203,6 +203,23 @@ test("the locale links carry the current card", () => {
   win.document.querySelector("#test").click();
 });
 
+// The spin button and space bar share one slot in test mode: the first press
+// answers the question on screen, the second rolls a new one.
+test("the spin button reveals before it rolls", () => {
+  win.document.querySelector("#test").click();
+  expect(win.document.querySelector(".reveal")).not.toBeNull();
+
+  win.document.querySelector("#spin").click();
+  expect(win.document.body.classList.contains("revealed")).toBe(true);
+  expect(win.document.querySelector(".reveal")).toBeNull();
+
+  win.document.querySelector("#spin").click();
+  expect(win.document.querySelector(".reveal")).not.toBeNull(); // a fresh, hidden card
+  expect(win.document.body.classList.contains("revealed")).toBe(false);
+
+  win.document.querySelector("#test").click();
+});
+
 test("test mode is the one-armed bandit, and hides the meaning until revealed", () => {
   expect(items("prefix").length).toBe(shown("prefix").length); // browse: one copy
   win.document.querySelector("#test").click();
