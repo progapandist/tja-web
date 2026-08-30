@@ -161,10 +161,12 @@ test("the locale links carry the current card", () => {
   expect(browsing.searchParams.get("verb")).toBe(word());
   expect(browsing.searchParams.get("mode")).toBeNull();
 
+  // Mid-guess the link still says cards: switching language is a request for
+  // the meaning, so the card arrives turned over rather than hidden again.
   win.document.querySelector("#test").click();
   const guessing = new URL(href());
   expect(guessing.searchParams.get("verb")).toBe(word());
-  expect(guessing.searchParams.get("mode")).toBe("guess");
+  expect(guessing.searchParams.get("mode")).toBe("cards");
 
   win.document.querySelector(".reveal").click();
   expect(new URL(href()).searchParams.get("mode")).toBe("cards");

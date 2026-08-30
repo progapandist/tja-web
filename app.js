@@ -39,14 +39,16 @@ if (asked) {
   state.prefix = prefixOf(asked);
   state.stem = asked.stem;
 }
-if (params.get("mode") === "cards" || params.get("mode") === "guess") {
+if (params.get("mode") === "cards") {
   state.testing = true;
-  state.revealed = params.get("mode") === "cards";
+  state.revealed = true;
 }
 
 function hrefFor(code) {
   const query = new URLSearchParams({ verb: selectedVerb().name });
-  if (state.testing) query.set("mode", state.revealed ? "cards" : "guess");
+  // Always turned over: switching language mid-guess is how you ask what the
+  // word means in the other language, not a request to keep guessing.
+  if (state.testing) query.set("mode", "cards");
   return `${code === "en" ? "/" : `/${code}/`}?${query}`;
 }
 
