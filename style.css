@@ -237,6 +237,11 @@ button:focus-visible,
 
 .contrib:hover { color: var(--ink); }
 
+/* On a phone the header has no room for the long form of the terminal link. */
+@media (max-width: 860px) {
+  .wide-only { display: none; }
+}
+
 /* ---- layout ---- */
 main {
   display: grid;
