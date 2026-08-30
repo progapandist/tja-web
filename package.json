@@ -1,0 +1,12 @@
+{
+  "name": "tja-web",
+  "private": true,
+  "scripts": {
+    "dev": "bun run server.js",
+    "test": "bun test"
+  },
+  "type": "module",
+  "devDependencies": {
+    "jsdom": "^30.0.1"
+  }
+}

@@ -1,0 +1,437 @@
+import { parse, prefixOf, forms, nebensatz, search, collate } from "./data.js";
+
+const stems = parse(await (await fetch("verbs.txt")).text()).sort((a, b) => collate(a.name, b.name));
+const verbs = stems.flatMap((stem) => stem.verbs);
+const byName = new Map(verbs.map((verb) => [verb.name, verb]));
+const prefixes = [...new Set(verbs.map(prefixOf))].sort(collate);
+
+// Is prefix + stem an actual German word?
+function isWord(prefix, stem) {
+  return byName.has(prefix + stem.name);
+}
+
+const find = (selector) => document.querySelector(selector);
+const firstVerb = byName.get("annehmen") ?? verbs[0];
+
+const state = {
+  prefix: prefixOf(firstVerb),
+  stem: firstVerb.stem,
+  showAll: false, // list every prefix and stem, not only the ones that pair
+  testing: false, // the one-armed bandit, one card at a time
+  revealed: true, // in test mode, whether the meaning is on show yet
+};
+
+const selectedVerb = () => byName.get(state.prefix + state.stem.name);
+
+// Each column shows only what pairs with the other column's selection, unless
+// showAll is on — then everything is listed and the impossible pairs are
+// dimmed rather than hidden.
+const prefixOptions = () =>
+  state.showAll ? prefixes : prefixes.filter((prefix) => isWord(prefix, state.stem));
+const stemOptions = () =>
+  state.showAll ? stems : stems.filter((stem) => isWord(state.prefix, stem));
+
+// ---- the two columns -------------------------------------------------------
+// Browsing, a column is an ordinary scrolling list. Testing, it becomes a slot
+// reel: the strip holds three copies of the list, so every position is
+// visually identical to itself one list-length higher up. That makes the roll
+// cheap — put the strip at its final resting place, then animate it in from a
+// copy or three above, and the eye sees a spin.
+
+function Column(element, labelOf, onPick) {
+  const strip = element.querySelector(".strip");
+  let keys = []; // one key per option, in display order
+  let selectedIndex = () => 0;
+  let copiesDrawn = 0;
+  let drag = null;
+
+  // Not every browser swallows the click that follows a drag. Without this, a
+  // flick would pick twice: once on release, once on the item under the finger.
+  let justDragged = false;
+
+  const itemHeight = () => strip.firstElementChild?.offsetHeight || 1;
+
+  // Where the strip has to sit for option i to land in the middle window. The
+  // middle copy is the one we aim at, hence the extra keys.length.
+  function restingPosition(i) {
+    return -(keys.length + i) * itemHeight() + (element.clientHeight - itemHeight()) / 2;
+  }
+
+  function step(by) {
+    const next = Math.min(keys.length - 1, Math.max(0, selectedIndex() + by));
+    onPick(keys[next]);
+  }
+
+  function draw(options, nextKeys, selected, isGhost) {
+    // A leftover reel position would throw off where the browsing list scrolls to.
+    if (!state.testing) strip.style.transform = "";
+
+    const copies = state.testing ? 3 : 1;
+    if (copies !== copiesDrawn || nextKeys.join(" ") !== keys.join(" ")) {
+      copiesDrawn = copies;
+      keys = nextKeys;
+      const items = [];
+      for (let copy = 0; copy < copies; copy++) {
+        options.forEach((option, i) => {
+          const item = document.createElement("div");
+          item.className = isGhost(option) ? "item ghost" : "item";
+          item.textContent = labelOf(option);
+          item.id = `${element.id}-${copy}-${i}`;
+          item.setAttribute("role", "option");
+          if (isGhost(option)) item.setAttribute("aria-disabled", "true");
+          item.onclick = () => justDragged || onPick(nextKeys[i]);
+          items.push(item);
+        });
+      }
+      strip.replaceChildren(...items);
+    }
+
+    [...strip.children].forEach((item, i) => {
+      const isSelected = i % keys.length === selected;
+      item.classList.toggle("on", isSelected);
+      item.setAttribute("aria-selected", isSelected);
+      if (!isSelected) return;
+      element.setAttribute("aria-activedescendant", item.id);
+      if (!state.testing) item.scrollIntoView({ block: "nearest" });
+    });
+  }
+
+  // turns is how many full lists to travel through on the way; zero is a nudge.
+  function moveTo(i, turns = 0, ms = 240) {
+    if (!state.testing) return; // the browsing list scrolls on its own
+    element.scrollTop = 0; // browsing may have left the list scrolled
+    const y = restingPosition(i);
+    const from = y + turns * keys.length * itemHeight();
+    strip.style.transform = `translateY(${y}px)`;
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    strip.animate([{ transform: `translateY(${from}px)` }, { transform: `translateY(${y}px)` }], {
+      duration: turns ? ms : 220,
+      easing: turns ? "cubic-bezier(.16,.9,.28,1)" : "ease-out",
+    });
+  }
+
+  element.addEventListener(
+    "wheel",
+    (event) => {
+      if (!state.testing) return; // the browsing list scrolls on its own
+      event.preventDefault();
+      step(Math.sign(event.deltaY));
+    },
+    { passive: false },
+  );
+
+  element.addEventListener("pointerdown", (event) => {
+    if (event.button || !state.testing) return;
+    drag = { startY: event.clientY, startIndex: selectedIndex(), moved: false };
+    element.setPointerCapture(event.pointerId);
+  });
+
+  element.addEventListener("pointermove", (event) => {
+    if (!drag) return;
+    const dy = event.clientY - drag.startY;
+    if (Math.abs(dy) > 4) drag.moved = true;
+    strip.style.transform = `translateY(${restingPosition(drag.startIndex) + dy}px)`;
+  });
+
+  element.addEventListener("pointerup", (event) => {
+    if (!drag) return;
+    const dragged = drag.moved;
+    const rows = Math.round((event.clientY - drag.startY) / itemHeight());
+    const landed = Math.min(keys.length - 1, Math.max(0, drag.startIndex - rows));
+    const startIndex = drag.startIndex;
+    drag = null;
+
+    if (!dragged) {
+      moveTo(startIndex);
+      return;
+    }
+    justDragged = true;
+    setTimeout(() => (justDragged = false)); // the click lands before any timer
+    onPick(keys[landed]);
+  });
+
+  element.addEventListener("pointercancel", () => {
+    if (drag) moveTo(drag.startIndex);
+    drag = null;
+  });
+
+  element.addEventListener("keydown", (event) => {
+    const by = { ArrowDown: 1, j: 1, ArrowUp: -1, k: -1, PageDown: 5, PageUp: -5 }[event.key];
+    if (!by) return;
+    event.preventDefault();
+    event.stopPropagation(); // the same keys are bound globally, for when nothing has focus
+    step(by);
+  });
+
+  return { draw, moveTo, step, watchIndex: (fn) => (selectedIndex = fn) };
+}
+
+// Picking something the other column cannot pair with moves that column too,
+// rather than leaving a combination that is not a word.
+const prefixColumn = Column(
+  find("#prefix"),
+  (prefix) => prefix || "—",
+  (prefix) => {
+    if (prefix === undefined) return;
+    state.prefix = prefix;
+    if (!isWord(prefix, state.stem)) state.stem = stems.find((stem) => isWord(prefix, stem));
+    render({ reposition: true });
+  },
+);
+
+const stemColumn = Column(
+  find("#stem"),
+  (stem) => stem.name,
+  (name) => {
+    const stem = stems.find((candidate) => candidate.name === name);
+    if (!stem) return;
+    state.stem = stem;
+    if (!isWord(state.prefix, stem)) {
+      state.prefix = prefixes.find((prefix) => isWord(prefix, stem));
+    }
+    render({ reposition: true });
+  },
+);
+
+prefixColumn.watchIndex(() => Math.max(0, prefixOptions().indexOf(state.prefix)));
+stemColumn.watchIndex(() => Math.max(0, stemOptions().indexOf(state.stem)));
+
+// ---- the card --------------------------------------------------------------
+const escape = (text) => text.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
+
+function cardHTML(verb) {
+  const { present, past, perfect } = forms(verb);
+  const prefix = prefixOf(verb);
+  const kind = !prefix ? "base verb" : verb.sep ? "separable" : "inseparable";
+  const reveal = '<button class="primary reveal" type="button">Reveal <kbd>enter</kbd></button>';
+
+  return `
+    <p class="prompt">What does it mean?</p>
+    <h2 class="word">${prefix ? `<b>${escape(prefix)}</b>` : ""}${escape(verb.stem.name)}</h2>
+    <div class="answer">
+      <p class="gloss">${escape(verb.official)}</p>
+      <ul class="badges">
+        <li class="${!prefix ? "bare" : verb.sep ? "sep" : "insep"}">${kind}</li>
+        <li>${escape(verb.aux)}</li>
+        <li class="use">${escape(verb.use)}</li>
+      </ul>
+      <dl class="forms">
+        <dt>present</dt><dd>er/sie ${escape(present)}</dd>
+        <dt>past</dt><dd>er/sie ${escape(past)}</dd>
+        <dt>perfect</dt><dd>er/sie ${escape(perfect)}</dd>
+        <dt>subclause</dt><dd>${escape(nebensatz(verb))}</dd>
+      </dl>
+      <h3>In the wild</h3>
+      <p class="colloquial">${escape(verb.colloquial)}</p>
+      <blockquote><p lang="de">${escape(verb.example)}</p><p class="en">${escape(verb.english)}</p></blockquote>
+    </div>
+    ${state.testing && !state.revealed ? reveal : ""}`;
+}
+
+// reposition moves the columns to the selection; turns > 0 makes that a spin.
+function render({ reposition = false, turns = 0 } = {}) {
+  // The mode classes decide how tall the columns are, so they go on before
+  // anything measures the layout.
+  document.body.classList.toggle("testing", state.testing);
+  document.body.classList.toggle("revealed", state.revealed);
+
+  const prefixList = prefixOptions();
+  const stemList = stemOptions();
+
+  prefixColumn.draw(prefixList, prefixList, prefixList.indexOf(state.prefix), (prefix) => !isWord(prefix, state.stem));
+  stemColumn.draw(
+    stemList,
+    stemList.map((stem) => stem.name),
+    stemList.indexOf(state.stem),
+    (stem) => !isWord(state.prefix, stem),
+  );
+
+  if (reposition) {
+    prefixColumn.moveTo(prefixList.indexOf(state.prefix), turns, 850);
+    stemColumn.moveTo(stemList.indexOf(state.stem), turns, 1150);
+  }
+
+  find("#test").setAttribute("aria-pressed", state.testing);
+  find("#all").setAttribute("aria-pressed", state.showAll);
+  find("#spin").firstChild.textContent = state.testing ? "Next " : "Random ";
+  find("#card").innerHTML = cardHTML(selectedVerb());
+  find("#card").querySelector(".reveal")?.addEventListener("click", reveal);
+}
+
+function reveal() {
+  state.revealed = true;
+  render();
+}
+
+function nextCard() {
+  const verb = verbs[Math.floor(Math.random() * verbs.length)];
+  state.prefix = prefixOf(verb);
+  state.stem = verb.stem;
+  state.revealed = !state.testing;
+  render({ reposition: true, turns: 3 });
+}
+
+// ---- search ----------------------------------------------------------------
+const query = find("#q");
+const results = find("#hits");
+
+function show(verb) {
+  if (!verb) return;
+  state.prefix = prefixOf(verb);
+  state.stem = verb.stem;
+  state.revealed = true;
+  query.value = "";
+  closeResults();
+  query.blur();
+  render({ reposition: true, turns: 1 });
+}
+
+let matches = []; // what the last query found
+let highlighted = 0; // which of them the arrow keys are on
+
+function closeResults() {
+  results.hidden = true;
+  matches = [];
+  query.setAttribute("aria-expanded", "false");
+  query.removeAttribute("aria-activedescendant");
+}
+
+function highlight(index) {
+  highlighted = Math.min(matches.length - 1, Math.max(0, index));
+  [...results.children].forEach((row, i) => {
+    const on = i === highlighted;
+    row.classList.toggle("on", on);
+    row.setAttribute("aria-selected", on);
+    if (on) {
+      query.setAttribute("aria-activedescendant", row.id);
+      row.scrollIntoView({ block: "nearest" });
+    }
+  });
+}
+
+query.addEventListener("input", () => {
+  matches = search(verbs, query.value).slice(0, 12);
+  if (matches.length === 0) {
+    closeResults();
+    return;
+  }
+  results.replaceChildren(
+    ...matches.map((verb, i) => {
+      const row = document.createElement("li");
+      row.id = `hit-${i}`;
+      row.setAttribute("role", "option");
+      row.innerHTML = `<b lang="de">${escape(verb.name)}</b><span>${escape(verb.official)}</span>`;
+      row.onclick = () => show(verb);
+      return row;
+    }),
+  );
+  results.hidden = false;
+  query.setAttribute("aria-expanded", "true");
+  highlight(0);
+});
+
+query.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    query.value = "";
+    closeResults();
+    query.blur();
+    return;
+  }
+  if (event.key === "Enter") {
+    event.preventDefault();
+    show(matches[highlighted]);
+    return;
+  }
+  if (matches.length === 0) return;
+  if (event.key === "ArrowDown") {
+    event.preventDefault();
+    highlight(highlighted + 1);
+  }
+  if (event.key === "ArrowUp") {
+    event.preventDefault();
+    highlight(highlighted - 1);
+  }
+});
+
+addEventListener("pointerdown", (event) => {
+  if (!event.target.closest(".find")) closeResults();
+});
+
+// ---- controls --------------------------------------------------------------
+function toggleTesting() {
+  state.testing = !state.testing;
+  state.revealed = !state.testing;
+  render({ reposition: true, turns: state.testing ? 3 : 0 });
+}
+
+function toggleShowAll() {
+  state.showAll = !state.showAll;
+  render({ reposition: true });
+}
+
+find("#spin").onclick = nextCard;
+find("#test").onclick = toggleTesting;
+find("#all").onclick = toggleShowAll;
+find("#focus").onclick = () => query.focus();
+
+addEventListener("keydown", (event) => {
+  const focused = event.target.tagName;
+  if (focused === "INPUT" || event.metaKey || event.ctrlKey || event.altKey) return;
+  // A focused button already answers space and enter; taking those would fire twice.
+  const buttonsOwn = event.key === " " || event.key === "Enter";
+  if (focused === "BUTTON" && buttonsOwn) return;
+
+  // The columns are tabbable, but with focus nowhere they still answer the
+  // arrows: up and down work the stems, left and right the prefixes.
+  const shortcuts = {
+    " ": nextCard,
+    t: toggleTesting,
+    f: toggleShowAll,
+    Enter: () => state.testing && !state.revealed && reveal(),
+    ArrowDown: () => stemColumn.step(1),
+    j: () => stemColumn.step(1),
+    ArrowUp: () => stemColumn.step(-1),
+    k: () => stemColumn.step(-1),
+    ArrowRight: () => prefixColumn.step(1),
+    ArrowLeft: () => prefixColumn.step(-1),
+    "/": () => query.focus(),
+  };
+
+  const action = shortcuts[event.key];
+  if (!action) return;
+  event.preventDefault();
+  action();
+});
+
+addEventListener("resize", () => render({ reposition: true }));
+
+// ---- theme -----------------------------------------------------------------
+// The system preference decides until the reader overrules it, and then that
+// choice is remembered. index.html applies it before the first paint.
+const themeButton = find("#theme");
+
+function currentTheme() {
+  if (document.documentElement.dataset.theme) return document.documentElement.dataset.theme;
+  return matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+function labelTheme() {
+  themeButton.textContent = currentTheme() === "dark" ? "light" : "dark";
+}
+
+themeButton.onclick = () => {
+  const next = currentTheme() === "dark" ? "light" : "dark";
+  document.documentElement.dataset.theme = next;
+  try {
+    localStorage.setItem("theme", next);
+  } catch (error) {
+    // A browser with storage switched off still gets the theme, just not the memory.
+  }
+  labelTheme();
+};
+
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", labelTheme);
+labelTheme();
+
+find("#count").textContent = `${verbs.length} verbs`;
+render({ reposition: true });

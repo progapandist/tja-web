@@ -1,0 +1,557 @@
+/* Bauhaus by way of brutalism: a paper ground, heavy rules, blocks of flat
+   colour instead of shading, geometric type, and no rounded corners anywhere.
+   Two palettes — the roles stay the same, only the values swap. */
+:root {
+  --paper: #edeae1; /* the ground */
+  --paper-2: #e2ded3; /* a panel raised off it */
+  --ink: #1d1c19; /* type and rules */
+  --dim: #6f6a61;
+  --ghost: #8d887e;
+  --red: #ab5340; /* terracotta, not pillar box */
+  --blue: #46617a; /* slate, not ultramarine */
+  --yellow: #c2a04e; /* ochre, not lemon */
+  --hairline: rgba(29, 28, 25, 0.18);
+  --band: rgba(194, 160, 78, 0.3);
+  --shadow: rgba(29, 28, 25, 0.9);
+
+  --rule: 3px solid var(--ink);
+  --hair: 1px solid var(--hairline);
+
+  --ih: 46px; /* one row in a column */
+  --reel-rows: 9;
+  --pad: clamp(14px, 2.4vw, 28px);
+
+  /* Futura where it exists, which is most Macs; a geometric stand-in elsewhere. */
+  --sans: Futura, "Century Gothic", "URW Gothic", "Avenir Next", ui-sans-serif, system-ui, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+
+  color-scheme: light;
+}
+
+/* The system preference, unless the reader has chosen otherwise. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #15151a;
+    --paper-2: #1d1d23;
+    --ink: #e9e6dd;
+    --dim: #8b867c;
+    --ghost: #55524c;
+    --red: #cd7357;
+    --blue: #7fa6c6;
+    --yellow: #cfa955;
+    --hairline: rgba(233, 230, 221, 0.16);
+    --band: rgba(207, 169, 85, 0.16);
+    --shadow: rgba(0, 0, 0, 0.85);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper: #15151a;
+  --paper-2: #1d1d23;
+  --ink: #e9e6dd;
+  --dim: #8b867c;
+  --ghost: #55524c;
+  --red: #cd7357;
+  --blue: #7fa6c6;
+  --yellow: #cfa955;
+  --hairline: rgba(233, 230, 221, 0.16);
+  --band: rgba(207, 169, 85, 0.16);
+  --shadow: rgba(0, 0, 0, 0.85);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; margin: 0; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px/1.6 var(--sans);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  height: 100dvh;
+  overflow: hidden;
+  -webkit-text-size-adjust: 100%;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+/* Bayer's alphabet was lowercase; the labels here follow. */
+.labels,
+.forms dt,
+.card h3,
+.prompt {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+/* ---- header ---- */
+header {
+  display: flex;
+  align-items: center;
+  gap: var(--pad);
+  padding: 12px var(--pad);
+  border-bottom: var(--rule);
+}
+
+h1 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-transform: lowercase;
+  white-space: nowrap;
+}
+
+/* Circle, triangle, square — red, yellow, blue. The whole school in 40px. */
+.marks {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.marks i {
+  display: block;
+  width: 13px;
+  height: 13px;
+}
+
+.circle { background: var(--red); border-radius: 50%; }
+.square { background: var(--blue); }
+
+.triangle {
+  background: none;
+  border-left: 6.5px solid transparent;
+  border-right: 6.5px solid transparent;
+  border-bottom: 13px solid var(--yellow);
+  height: 0 !important;
+}
+
+.count {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0;
+  font-weight: 400;
+  color: var(--dim);
+  align-self: flex-end;
+  padding-bottom: 4px;
+}
+
+.find {
+  position: relative;
+  flex: 1 1 auto;
+  max-width: 420px;
+  margin-inline: auto;
+}
+
+#q {
+  width: 100%;
+  font: inherit;
+  font-size: 15px;
+  color: var(--ink);
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 0;
+  padding: 8px 12px;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+#q::placeholder { color: var(--dim); }
+#q:focus { outline: none; border-color: var(--red); }
+
+#hits {
+  position: absolute;
+  z-index: 5;
+  inset-inline: 0;
+  top: calc(100% + 6px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 60vh;
+  overflow-y: auto;
+  background: var(--paper);
+  border: var(--rule);
+  box-shadow: 5px 5px 0 var(--shadow);
+}
+
+#hits li {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  padding: 9px 12px;
+  border-bottom: var(--hair);
+  cursor: pointer;
+}
+
+#hits li:last-child { border-bottom: none; }
+#hits li:hover,
+#hits li.on { background: var(--paper-2); }
+#hits b { color: var(--red); font-weight: 500; }
+#hits li:hover b { color: var(--ink); }
+
+#hits span {
+  color: var(--dim);
+  font-size: 13px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+#hits li:hover span { color: var(--ink); }
+
+.theme {
+  font: inherit;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: lowercase;
+  color: var(--dim);
+  background: none;
+  border: var(--hair);
+  padding: 5px 12px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.theme:hover { color: var(--ink); border-color: var(--ink); }
+
+/* One focus treatment for everything that takes focus. */
+a:focus-visible,
+button:focus-visible,
+.reel:focus-visible {
+  outline: 3px solid var(--red);
+  outline-offset: 2px;
+}
+
+.contrib {
+  color: var(--dim);
+  font-size: 13px;
+  text-decoration: none;
+  box-shadow: inset 0 -6px 0 var(--yellow);
+  white-space: nowrap;
+}
+
+.contrib:hover { color: var(--ink); }
+
+/* ---- layout ---- */
+main {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.8fr) minmax(0, 1.2fr);
+  grid-template-rows: minmax(0, 1fr);
+  min-height: 0;
+}
+
+/* ---- the two columns ---- */
+/* Browsing, they are plain scrolling lists side by side, the way the terminal
+   version draws its panes. Testing, the same markup becomes a slot machine. */
+.machine {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  align-self: stretch;
+  border-right: var(--rule);
+  background: var(--paper-2);
+}
+
+.labels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 12px 0;
+  border-bottom: var(--rule);
+}
+
+/* The same inset as a row, so a label sits over its own column. */
+.labels span { padding: 0 var(--pad); }
+
+.reels {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: minmax(0, 1fr);
+  min-height: 0;
+  flex: 1;
+}
+
+.reel {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  outline: none;
+}
+
+#prefix { border-right: var(--rule); }
+.reel:focus-visible { outline-offset: -3px; }
+
+.item {
+  height: var(--ih);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--pad);
+  font-size: 17px;
+  color: var(--ink);
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  white-space: nowrap;
+}
+
+/* A border would change the row height, which the reel arithmetic counts on. */
+.item + .item { box-shadow: inset 0 1px 0 var(--hairline); }
+.item:hover { background: var(--paper-2); }
+.item.ghost { color: var(--ghost); font-style: italic; }
+
+/* The selection is a block of colour, not a highlight. */
+.item.on { font-weight: 500; color: var(--paper); }
+.item.on:hover { filter: brightness(1.08); }
+#prefix .item.on { background: var(--red); }
+#stem .item.on { background: var(--blue); }
+
+/* The lit band a reel comes to rest in. Only the slot machine has one. */
+.window { display: none; }
+
+/* ---- the same columns, as a one-armed bandit ---- */
+body.testing .machine { align-self: center; border-right: none; background: none; }
+body.testing .labels { border-bottom: none; padding-bottom: 6px; }
+
+body.testing .reels {
+  flex: none; /* a flex-basis of 0 would beat the height below */
+  height: min(calc(var(--ih) * var(--reel-rows)), calc(100dvh - 240px));
+  border-block: var(--rule);
+  background: var(--paper-2);
+}
+
+body.testing .reel {
+  position: relative;
+  z-index: 1; /* the lit band is painted behind the rows, not over them */
+  overflow: hidden;
+  border-right: none;
+  touch-action: none;
+  cursor: grab;
+  -webkit-mask-image: linear-gradient(transparent, #000 26%, #000 74%, transparent);
+  mask-image: linear-gradient(transparent, #000 26%, #000 74%, transparent);
+}
+
+body.testing .reel:active { cursor: grabbing; }
+body.testing .strip { will-change: transform; }
+
+body.testing .item {
+  justify-content: center;
+  padding: 0;
+  background: none;
+  box-shadow: none;
+}
+
+/* The lit band is the block here, so the landed word only needs its colour. */
+body.testing #prefix .item.on { background: none; color: var(--red); }
+body.testing #stem .item.on { background: none; color: var(--blue); }
+
+body.testing .window {
+  display: block;
+  position: absolute;
+  z-index: 0;
+  inset-inline: 0;
+  top: 50%;
+  height: var(--ih);
+  transform: translateY(-50%);
+  background: var(--band);
+  border-block: var(--rule);
+  pointer-events: none;
+}
+
+/* ---- the card ---- */
+.card {
+  min-width: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: clamp(24px, 4vw, 56px) clamp(20px, 4vw, 60px);
+}
+
+.word {
+  font-size: clamp(38px, 5.6vw, 66px);
+  line-height: 0.96;
+  margin: 0;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  text-transform: lowercase;
+  overflow-wrap: anywhere;
+}
+
+.word b { color: var(--red); font-weight: 700; }
+
+.gloss {
+  margin: 16px 0 0;
+  font-size: clamp(17px, 1.7vw, 20px);
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--blue);
+  max-width: 34ch;
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  margin: 28px 0 0;
+  padding: 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
+
+.badges li {
+  padding: 3px 9px;
+  border: var(--hair);
+  color: var(--dim);
+}
+
+.badges .sep { border-color: var(--ink); color: var(--ink); }
+.badges .insep { border-color: var(--red); color: var(--red); }
+.badges .bare { border-color: var(--blue); color: var(--blue); }
+
+.forms {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 10px 28px;
+  margin: 30px 0 0;
+  padding: 26px 0 0;
+  border-top: var(--rule);
+}
+
+.forms dt { padding-top: 4px; }
+
+.forms dd {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.card h3 { margin: 36px 0 10px; }
+
+.colloquial { margin: 0; max-width: 58ch; }
+
+blockquote {
+  margin: 28px 0 0;
+  padding: 14px 20px;
+  border-left: 6px solid var(--yellow);
+  background: var(--paper-2);
+  max-width: 62ch;
+}
+
+blockquote p { margin: 0; font-size: clamp(16px, 1.5vw, 18px); line-height: 1.5; }
+blockquote .en { margin-top: 6px; color: var(--dim); font-size: 14px; }
+
+/* Test mode: the word is the question, everything else waits. */
+body.testing:not(.revealed) .answer { display: none; }
+
+body.testing:not(.revealed) .card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: clamp(30px, 7vh, 64px);
+}
+
+body.testing:not(.revealed) .word { font-size: clamp(40px, 7vw, 78px); }
+
+.prompt { display: none; }
+body.testing:not(.revealed) .prompt { display: block; margin: 0; }
+
+/* ---- footer ---- */
+footer {
+  display: flex;
+  border-top: var(--rule);
+}
+
+footer button,
+.reveal {
+  font: inherit;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+  color: var(--ink);
+  background: var(--paper);
+  border: none;
+  border-right: var(--rule);
+  border-radius: 0;
+  flex: 1;
+  padding: 0 24px;
+  min-height: 54px;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+footer button:last-child { border-right: none; }
+footer button:hover { background: var(--paper-2); }
+footer button[aria-pressed="true"] { background: var(--red); color: var(--paper); font-weight: 500; }
+footer button[aria-pressed="true"] kbd { color: var(--paper); }
+
+.primary { background: var(--ink); color: var(--paper); font-weight: 500; }
+.primary:hover { background: var(--red); }
+.primary kbd { color: var(--paper); }
+
+/* The reveal button stands alone on the card, so it carries its own frame. */
+.reveal {
+  flex: none; /* the footer buttons stretch; this one does not */
+  min-width: 260px;
+  padding: 0 32px;
+  color: var(--ink);
+  background: none;
+  border: var(--rule);
+  box-shadow: 5px 5px 0 var(--ink);
+}
+
+.reveal kbd { color: var(--dim); }
+.reveal:hover { background: var(--ink); color: var(--paper); box-shadow: 2px 2px 0 var(--ink); }
+
+kbd {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--dim);
+  margin-left: 8px;
+}
+
+/* ---- narrow ---- */
+@media (max-width: 860px) {
+  :root { --ih: 44px; --reel-rows: 5; }
+
+  main { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+  header { flex-wrap: wrap; gap: 12px; }
+  h1 { flex: 1; }
+  .find { order: 3; flex-basis: 100%; max-width: none; margin: 0; }
+
+  .machine { align-self: start; border-right: none; border-bottom: var(--rule); }
+  .reels { height: calc(var(--ih) * var(--reel-rows)); flex: none; }
+  body.testing .machine { border-bottom: none; }
+
+  footer button { padding: 0 8px; }
+}
+
+@media (max-width: 560px) {
+  kbd { display: none; }
+}
+
+/* Short screens: give the columns fewer rows so the card keeps its room. */
+@media (max-height: 720px) {
+  :root { --reel-rows: 4; }
+}
+
+@media (max-height: 560px) {
+  :root { --reel-rows: 3; --ih: 40px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .strip { transition: none; }
+}

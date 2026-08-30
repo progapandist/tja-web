@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="description" content="German prefix verbs as a one-armed bandit: two reels, prefixes and stems, that filter each other.">
+<title>tja — German prefix verbs</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>🎰</text></svg>">
+<script>
+  // Applied before the first paint, so the page never flashes the wrong theme.
+  try {
+    const saved = localStorage.getItem("theme");
+    if (saved) document.documentElement.dataset.theme = saved;
+  } catch (e) {}
+</script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1><span class="marks" aria-hidden="true"><i class="circle"></i><i class="triangle"></i><i class="square"></i></span>tja<span class="count" id="count"></span></h1>
+  <div class="find">
+    <input id="q" type="search" placeholder="Search verbs and meanings…" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="Search verbs and meanings" role="combobox" aria-expanded="false" aria-controls="hits" aria-autocomplete="list">
+    <ul id="hits" role="listbox" aria-label="Search results" hidden></ul>
+  </div>
+  <button id="theme" class="theme" type="button" aria-label="Switch theme"></button>
+  <a class="contrib" href="https://github.com/progapandist/tja" target="_blank" rel="noopener">contribute ↗</a>
+</header>
+
+<main>
+  <section class="machine">
+    <div class="labels"><span>prefix</span><span>stem</span></div>
+    <div class="reels">
+      <div class="reel" id="prefix" tabindex="0" role="listbox" aria-label="Prefixes"><div class="strip" lang="de"></div></div>
+      <div class="reel" id="stem" tabindex="0" role="listbox" aria-label="Stems"><div class="strip" lang="de"></div></div>
+      <div class="window" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  <article class="card" id="card" aria-live="polite"></article>
+</main>
+
+<footer>
+  <button id="spin" class="primary" type="button">Random <kbd>space</kbd></button>
+  <button id="test" type="button">Test mode <kbd>t</kbd></button>
+  <button id="all" type="button">Show all <kbd>f</kbd></button>
+  <button id="focus" type="button">Search <kbd>/</kbd></button>
+</footer>
+<script type="module" src="app.js"></script>
+</body>
+</html>
