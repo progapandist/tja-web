@@ -16,20 +16,16 @@ const firstVerb = byName.get("annehmen") ?? verbs[0];
 const state = {
   prefix: prefixOf(firstVerb),
   stem: firstVerb.stem,
-  showAll: false, // list every prefix and stem, not only the ones that pair
-  testing: false, // the one-armed bandit, one card at a time
+  testing: false, // flashcards: the one-armed bandit, one card at a time
   revealed: true, // in test mode, whether the meaning is on show yet
 };
 
 const selectedVerb = () => byName.get(state.prefix + state.stem.name);
 
-// Each column shows only what pairs with the other column's selection, unless
-// showAll is on — then everything is listed and the impossible pairs are
-// dimmed rather than hidden.
-const prefixOptions = () =>
-  state.showAll ? prefixes : prefixes.filter((prefix) => isWord(prefix, state.stem));
-const stemOptions = () =>
-  state.showAll ? stems : stems.filter((stem) => isWord(state.prefix, stem));
+// Each column shows only what pairs with the other column's selection, so
+// every combination you can land on is a real word.
+const prefixOptions = () => prefixes.filter((prefix) => isWord(prefix, state.stem));
+const stemOptions = () => stems.filter((stem) => isWord(state.prefix, stem));
 
 // ---- the two columns -------------------------------------------------------
 // Browsing, a column is an ordinary scrolling list. Testing, it becomes a slot
@@ -62,7 +58,7 @@ function Column(element, labelOf, onPick) {
     onPick(keys[next]);
   }
 
-  function draw(options, nextKeys, selected, isGhost) {
+  function draw(options, nextKeys, selected) {
     // A leftover reel position would throw off where the browsing list scrolls to.
     if (!state.testing) strip.style.transform = "";
 
@@ -74,11 +70,10 @@ function Column(element, labelOf, onPick) {
       for (let copy = 0; copy < copies; copy++) {
         options.forEach((option, i) => {
           const item = document.createElement("div");
-          item.className = isGhost(option) ? "item ghost" : "item";
+          item.className = "item";
           item.textContent = labelOf(option);
           item.id = `${element.id}-${copy}-${i}`;
           item.setAttribute("role", "option");
-          if (isGhost(option)) item.setAttribute("aria-disabled", "true");
           item.onclick = () => justDragged || onPick(nextKeys[i]);
           items.push(item);
         });
@@ -238,22 +233,18 @@ function render({ reposition = false, turns = 0 } = {}) {
   const prefixList = prefixOptions();
   const stemList = stemOptions();
 
-  prefixColumn.draw(prefixList, prefixList, prefixList.indexOf(state.prefix), (prefix) => !isWord(prefix, state.stem));
-  stemColumn.draw(
-    stemList,
-    stemList.map((stem) => stem.name),
-    stemList.indexOf(state.stem),
-    (stem) => !isWord(state.prefix, stem),
-  );
+  prefixColumn.draw(prefixList, prefixList, prefixList.indexOf(state.prefix));
+  stemColumn.draw(stemList, stemList.map((stem) => stem.name), stemList.indexOf(state.stem));
 
   if (reposition) {
     prefixColumn.moveTo(prefixList.indexOf(state.prefix), turns, 850);
     stemColumn.moveTo(stemList.indexOf(state.stem), turns, 1150);
   }
 
-  find("#test").setAttribute("aria-pressed", state.testing);
-  find("#all").setAttribute("aria-pressed", state.showAll);
-  find("#spin").firstChild.textContent = state.testing ? "Next " : "Random ";
+  find("#spin").firstChild.textContent = state.testing ? "Next card " : "Random verb ";
+  find("#test").firstChild.textContent = state.testing ? "Back to list " : "Flashcards ";
+  find("#spin").classList.toggle("primary", state.testing);
+  find("#test").classList.toggle("primary", !state.testing);
   find("#card").innerHTML = cardHTML(selectedVerb());
   find("#card").querySelector(".reveal")?.addEventListener("click", reveal);
 }
@@ -364,14 +355,8 @@ function toggleTesting() {
   render({ reposition: true, turns: state.testing ? 3 : 0 });
 }
 
-function toggleShowAll() {
-  state.showAll = !state.showAll;
-  render({ reposition: true });
-}
-
 find("#spin").onclick = nextCard;
 find("#test").onclick = toggleTesting;
-find("#all").onclick = toggleShowAll;
 find("#focus").onclick = () => query.focus();
 
 addEventListener("keydown", (event) => {
@@ -386,7 +371,6 @@ addEventListener("keydown", (event) => {
   const shortcuts = {
     " ": nextCard,
     t: toggleTesting,
-    f: toggleShowAll,
     Enter: () => state.testing && !state.revealed && reveal(),
     ArrowDown: () => stemColumn.step(1),
     j: () => stemColumn.step(1),

@@ -1,6 +1,6 @@
 import { expect, test, beforeAll } from "bun:test";
 import { JSDOM } from "jsdom";
-import { parse, forms, nebensatz, search, prefixOf } from "./data.js";
+import { parse, forms, nebensatz, search } from "./data.js";
 
 const raw = await Bun.file("verbs.txt").text();
 const stems = parse(raw);
@@ -106,13 +106,4 @@ test("test mode is the one-armed bandit, and hides the meaning until revealed", 
   expect(win.document.body.classList.contains("revealed")).toBe(true);
   expect(win.document.querySelector(".reveal")).toBeNull();
   win.document.querySelector("#test").click();
-});
-
-test("show-all offers every prefix, marking the ones that do not pair", () => {
-  win.document.querySelector("#all").click();
-  const all = new Set(verbs.map((v) => prefixOf(v)));
-  expect(shown("prefix").length).toBe(all.size);
-  expect(win.document.querySelectorAll("#prefix .item.ghost").length).toBeGreaterThan(0);
-  win.document.querySelector("#all").click();
-  expect(win.document.querySelectorAll("#prefix .item.ghost").length).toBe(0);
 });

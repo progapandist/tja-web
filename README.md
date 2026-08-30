@@ -5,7 +5,7 @@ filter each other, so every pair you can land on is a real word. Pick one and
 the card tells you what it means, where the prefix goes in each tense, and how
 the verb is actually used.
 
-Test mode turns the same two columns into a one-armed bandit: pull the handle,
+Flashcard mode turns the same two columns into a one-armed bandit: pull the handle,
 the reels spin, you get a verb and one question — what does it mean?
 
 Bauhaus by way of brutalism: paper, heavy rules, blocks of flat colour, and
@@ -62,9 +62,8 @@ verb|separable t/f|official|colloquial|example|use|example in English|aux overri
 
 | | |
 |---|---|
-| `space` | random verb — or the next card, in test mode |
-| `t` | test mode |
-| `f` | show every prefix and stem, dimming the pairs that are not words |
+| `space` | random verb — or the next card, in flashcard mode |
+| `t` | flashcards |
 | `/` | search, umlauts optional: `uber` and `ueber` both find `übernehmen` |
 | `enter` | reveal the meaning |
 | arrows, `j` `k` | move the columns — up and down the stems, left and right the prefixes |

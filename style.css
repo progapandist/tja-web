@@ -6,7 +6,6 @@
   --paper-2: #e2ded3; /* a panel raised off it */
   --ink: #1d1c19; /* type and rules */
   --dim: #6f6a61;
-  --ghost: #8d887e;
   --red: #ab5340; /* terracotta, not pillar box */
   --blue: #46617a; /* slate, not ultramarine */
   --yellow: #c2a04e; /* ochre, not lemon */
@@ -35,7 +34,6 @@
     --paper-2: #1d1d23;
     --ink: #e9e6dd;
     --dim: #8b867c;
-    --ghost: #55524c;
     --red: #cd7357;
     --blue: #7fa6c6;
     --yellow: #cfa955;
@@ -51,7 +49,6 @@
   --paper-2: #1d1d23;
   --ink: #e9e6dd;
   --dim: #8b867c;
-  --ghost: #55524c;
   --red: #cd7357;
   --blue: #7fa6c6;
   --yellow: #cfa955;
@@ -306,7 +303,6 @@ main {
 /* A border would change the row height, which the reel arithmetic counts on. */
 .item + .item { box-shadow: inset 0 1px 0 var(--hairline); }
 .item:hover { background: var(--paper-2); }
-.item.ghost { color: var(--ghost); font-style: italic; }
 
 /* The selection is a block of colour, not a highlight. */
 .item.on { font-weight: 500; color: var(--paper); }
