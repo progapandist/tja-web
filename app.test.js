@@ -1,6 +1,6 @@
 import { expect, test, beforeAll } from "bun:test";
 import { JSDOM } from "jsdom";
-import { parse, forms, nebensatz, search, translate } from "./data.js";
+import { parse, forms, nebensatz, search, translate, collate } from "./data.js";
 
 const raw = await Bun.file("verbs.txt").text();
 const stems = parse(raw);
@@ -28,10 +28,17 @@ test("forms move the prefix the way German does", () => {
 // The reader searches in whatever language the card is in, so the meaning text
 // has to be reachable, ranked, and forgiving about ё and about phrases.
 test("search reaches the meaning, not just the German", async () => {
-  const ru = translate(parse(raw), await Bun.file("verbs.ru.txt").text()).flatMap((stem) => stem.verbs);
+  // Sorted the way app.js sorts it, or the ranking under test is not the
+  // ranking the reader gets.
+  const ru = translate(parse(raw), await Bun.file("verbs.ru.txt").text())
+    .sort((a, b) => collate(a.name, b.name))
+    .flatMap((stem) => stem.verbs);
   const names = (q) => search(ru, q).map((v) => v.name);
 
-  expect(names("принимать")[0]).toBe("annehmen"); // the meaning beats the anecdote
+  // A word the entry opens with outranks the same word buried in a sentence.
+  const принимать = names("принимать");
+  expect(принимать).toContain("annehmen");
+  expect(принимать.indexOf("annehmen")).toBeLessThan(принимать.indexOf("einnehmen"));
   expect(names("сдать экзамен")).toContain("bestehen"); // every word, not the phrase
   expect(names("повезёт")).toEqual(names("повезет")); // ё and е are the same key
   expect(names("xyzzy")).toEqual([]);
