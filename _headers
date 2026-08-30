@@ -1,11 +1,25 @@
-# Every asset URL in index.html carries a content hash, so a URL that resolves
-# today will never mean anything else. index.html itself is left on Cloudflare's
+# Every asset URL in the pages carries a content hash, so a URL that resolves
+# today will never mean anything else. The HTML itself is left on Cloudflare's
 # default, which revalidates on every load.
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
 /*.css
   Cache-Control: public, max-age=31536000, immutable
 /*.js
+  Cache-Control: public, max-age=31536000, immutable
+/*.png
   Cache-Control: public, max-age=31536000, immutable
 /verbs.txt
   Cache-Control: public, max-age=31536000, immutable
 /verbs.ru.txt
   Cache-Control: public, max-age=31536000, immutable
+/verbs.fr.txt
+  Cache-Control: public, max-age=31536000, immutable
+
+# Crawler files change without their URL changing, so they revalidate daily.
+/sitemap.xml
+  Cache-Control: public, max-age=86400
+/robots.txt
+  Cache-Control: public, max-age=86400

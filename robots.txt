@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# The ?verb= deep links are the locale root with one verb preselected. They are
+# left crawlable on purpose: every one of them carries a canonical back to the
+# root, and a crawler has to fetch the page to read that. Disallowing them here
+# would hide the canonical and let the bare URLs get indexed anyway.
+
+Sitemap: https://tja.progapanda.org/sitemap.xml

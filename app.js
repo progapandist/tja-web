@@ -485,7 +485,11 @@ find("#locale").setAttribute("aria-label", t.languageLabel);
 // by chopping the front leaves the case ending stranded.
 find(".contrib.nerdy").innerHTML =
   `<span class="wide-only">${t.terminalLong}</span><span class="narrow-only">${t.terminalShort}</span>`;
-find(".contrib:not(.nerdy)").textContent = t.contribute;
+find("#contribute").textContent = t.contribute;
+// The build writes this link into the static HTML for crawlers; setting it
+// here too keeps the dev server, which serves the source, showing the same.
+find("#all-verbs").textContent = t.allVerbs;
+find("#all-verbs").href = locale === "en" ? "/verbs/" : `/${locale}/verbs/`;
 
 // Two links rather than a toggle: switching language is a navigation, and a
 // reload here costs nothing that is not already cached.

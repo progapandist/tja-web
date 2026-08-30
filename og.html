@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- The source for og.png. Rendered once at 1200x630 by `make og`, which
+     shoots it with headless Chrome; the PNG is what ships. Kept as HTML so
+     the card can be re-cut from the same palette as the site. -->
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --paper: #edeae1;
+    --ink: #1d1c19;
+    --red: #ab5340;
+    --blue: #46617a;
+    --yellow: #c2a04e;
+    --dim: #6f6a61;
+    --sans: Futura, "Century Gothic", "Avenir Next", system-ui, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  body {
+    width: 1200px;
+    height: 630px;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* A slab of colour down the left, the way the reels sit on the site. */
+  .sheet { flex: 1; display: grid; grid-template-columns: 96px 1fr; }
+  .rail { display: flex; flex-direction: column; border-right: 6px solid var(--ink); }
+  .rail i { flex: 1; }
+  .rail .a { background: var(--red); }
+  .rail .b { background: var(--yellow); }
+  .rail .c { background: var(--blue); }
+
+  .body { padding: 54px 64px 0 58px; display: flex; flex-direction: column; }
+
+  .brand { display: flex; align-items: center; gap: 18px; }
+  .marks { display: flex; gap: 10px; }
+  .marks i { width: 26px; height: 26px; display: block; }
+  .circle { background: var(--red); border-radius: 50%; }
+  .triangle { width: 0 !important; height: 0 !important; border-left: 13px solid transparent; border-right: 13px solid transparent; border-bottom: 24px solid var(--yellow); }
+  .square { background: var(--blue); }
+  .word-tja { font-size: 62px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
+
+  .combo {
+    margin-top: 34px;
+    font-family: var(--mono);
+    font-size: 25px;
+    letter-spacing: 0.04em;
+    color: var(--dim);
+  }
+  .combo b { color: var(--red); font-weight: 400; }
+  .combo i { color: var(--blue); font-style: normal; }
+
+  .verb {
+    margin-top: 8px;
+    font-size: 132px;
+    font-weight: 700;
+    letter-spacing: -0.035em;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .verb b { color: var(--red); font-weight: 700; }
+
+  .tag {
+    margin-top: 26px;
+    font-size: 33px;
+    line-height: 1.32;
+    color: var(--ink);
+    max-width: 940px;
+  }
+  .tag em { font-style: normal; color: var(--blue); }
+
+  .badges { margin-top: 30px; display: flex; gap: 14px; }
+  .badges span {
+    font-family: var(--mono);
+    font-size: 21px;
+    padding: 9px 18px;
+    border: 3px solid var(--ink);
+  }
+  .badges .fill { background: var(--ink); color: var(--paper); }
+
+  footer {
+    height: 92px;
+    border-top: 6px solid var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 64px 0 58px;
+    font-family: var(--mono);
+    font-size: 25px;
+    color: var(--dim);
+    background: var(--paper);
+  }
+  footer b { color: var(--ink); font-family: var(--sans); font-size: 27px; letter-spacing: 0.02em; }
+</style>
+</head>
+<body>
+  <div class="sheet">
+    <div class="rail"><i class="a"></i><i class="b"></i><i class="c"></i></div>
+    <div class="body">
+      <div class="brand">
+        <span class="marks"><i class="circle"></i><i class="triangle"></i><i class="square"></i></span>
+        <span class="word-tja">tja</span>
+      </div>
+      <div class="combo"><b>an</b> + <i>nehmen</i> &nbsp;→</div>
+      <div class="verb"><b>an</b>nehmen</div>
+      <p class="tag">German prefix verbs as a one-armed bandit.<br>792 verbs, 90 stems, <em>trennbar</em> and <em>untrennbar</em>.</p>
+      <div class="badges">
+        <span class="fill">Präsens</span><span>Präteritum</span><span>Perfekt</span><span>Nebensatz</span>
+      </div>
+    </div>
+  </div>
+  <footer><span>tja.progapanda.org</span><b>EN · RU · FR</b></footer>
+</body>
+</html>
