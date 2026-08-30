@@ -16,16 +16,19 @@ for (const file of ["data.js", "strings.js", "style.css", "verbs.txt", "verbs.ru
   stamped[file] = `${file}?v=${hash(file)}`;
 }
 
+// Absolute, not relative: /ru/ is a real directory as far as the browser is
+// concerned, and a relative specifier there resolves to /ru/data.js, which
+// Cloudflare answers with the HTML page instead of a 404.
 let app = readFileSync(dist + "app.js", "utf8");
 for (const file of ["data.js", "strings.js"]) {
-  app = app.replaceAll(`"./${file}"`, `"./${stamped[file]}"`);
+  app = app.replaceAll(`"./${file}"`, `"/${stamped[file]}"`);
 }
 writeFileSync(dist + "app.js", app);
 stamped["app.js"] = `app.js?v=${hash("app.js")}`;
 
 let html = readFileSync(dist + "index.html", "utf8");
 for (const [file, versioned] of Object.entries(stamped)) {
-  html = html.replaceAll(`"${file}"`, `"${versioned}"`).replaceAll(`"/${file}"`, `"/${versioned}"`);
+  html = html.replaceAll(`"${file}"`, `"/${versioned}"`).replaceAll(`"/${file}"`, `"/${versioned}"`);
 }
 writeFileSync(dist + "index.html", html);
 
