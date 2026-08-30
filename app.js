@@ -242,7 +242,7 @@ function render({ reposition = false, turns = 0 } = {}) {
   }
 
   find("#spin").firstChild.textContent = state.testing ? "Next card " : "Random verb ";
-  find("#test").firstChild.textContent = state.testing ? "Back to list " : "Flashcards ";
+  find("#test").firstChild.textContent = state.testing ? "Back to list " : "I’m feeling lucky ";
   find("#spin").classList.toggle("primary", state.testing);
   find("#test").classList.toggle("primary", !state.testing);
   find("#card").innerHTML = cardHTML(selectedVerb());

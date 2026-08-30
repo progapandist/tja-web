@@ -63,7 +63,7 @@ verb|separable t/f|official|colloquial|example|use|example in English|aux overri
 | | |
 |---|---|
 | `space` | random verb — or the next card, in flashcard mode |
-| `t` | flashcards |
+| `t` | flashcards — the button says *I’m feeling lucky* |
 | `/` | search, umlauts optional: `uber` and `ueber` both find `übernehmen` |
 | `enter` | reveal the meaning |
 | arrows, `j` `k` | move the columns — up and down the stems, left and right the prefixes |
