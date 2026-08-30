@@ -228,7 +228,7 @@ function cardHTML(verb) {
   const { present, past, perfect } = forms(verb);
   const prefix = prefixOf(verb);
   const kind = !prefix ? t.base : verb.sep ? t.separable : t.inseparable;
-  const reveal = `<button class="primary reveal" type="button">${t.reveal} <kbd>enter</kbd></button>`;
+  const reveal = `<button class="primary reveal" type="button">${t.reveal} <kbd>space / enter</kbd></button>`;
 
   return `
     <p class="prompt">${t.prompt}</p>
@@ -283,6 +283,14 @@ function render({ reposition = false, turns = 0 } = {}) {
 function reveal() {
   state.revealed = true;
   render();
+}
+
+// Space is the one key you keep tapping, so it answers the card in front of
+// you before it rolls a new one. The footer button it shares a shortcut with
+// stays a next button, labelled and behaving the same in either half.
+function revealOrNext() {
+  if (state.testing && !state.revealed) reveal();
+  else nextCard();
 }
 
 function nextCard() {
@@ -400,7 +408,7 @@ addEventListener("keydown", (event) => {
   // The columns are tabbable, but with focus nowhere they still answer the
   // arrows: up and down work the stems, left and right the prefixes.
   const shortcuts = {
-    " ": nextCard,
+    " ": revealOrNext,
     t: toggleTesting,
     Enter: () => state.testing && !state.revealed && reveal(),
     ArrowDown: () => stemColumn.step(1),

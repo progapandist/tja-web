@@ -203,20 +203,37 @@ test("the locale links carry the current card", () => {
   win.document.querySelector("#test").click();
 });
 
-// The spin button is a next button and nothing else. Revealing belongs to the
-// button under the verb, so the label never has to track what the last press did.
-test("the spin button rolls whether or not the card is turned over", () => {
+// Space is contextual, the button is not. Tapping space answers the card in
+// front of you and then keeps rolling, which is the whole flow one-handed; the
+// footer button says next and only ever does next.
+test("space reveals first, the next button always rolls", () => {
+  const press = (key) => win.dispatchEvent(new win.KeyboardEvent("keydown", { key }));
   const label = () => win.document.querySelector("#spin").firstChild.textContent.trim();
+
   win.document.querySelector("#test").click();
   expect(win.document.querySelector(".reveal")).not.toBeNull();
-  const hidden = label();
+  const next = label();
 
+  press(" ");
+  expect(win.document.body.classList.contains("revealed")).toBe(true);
+  expect(label()).toBe(next); // the label never moves
+
+  press(" ");
+  expect(win.document.body.classList.contains("revealed")).toBe(false); // rolled, hidden again
+  expect(win.document.querySelector(".reveal")).not.toBeNull();
+
+  // Enter reveals and never rolls, however many times it is pressed.
+  const word0 = word();
+  press("Enter");
+  press("Enter");
+  expect(win.document.body.classList.contains("revealed")).toBe(true);
+  expect(word()).toBe(word0);
+
+  // The button is a next button in either half of the guess.
   win.document.querySelector("#spin").click();
-  expect(win.document.querySelector(".reveal")).not.toBeNull(); // rolled, still hidden
   expect(win.document.body.classList.contains("revealed")).toBe(false);
-
-  win.document.querySelector(".reveal").click();
-  expect(label()).toBe(hidden); // turning the card over leaves the label alone
+  win.document.querySelector("#spin").click();
+  expect(win.document.body.classList.contains("revealed")).toBe(false);
 
   win.document.querySelector("#test").click();
 });
