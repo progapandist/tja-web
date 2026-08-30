@@ -1,6 +1,9 @@
 import { parse, prefixOf, forms, nebensatz, search, collate } from "./data.js";
 
-const stems = parse(await (await fetch("verbs.txt")).text()).sort((a, b) => collate(a.name, b.name));
+// index.html kicks this off while it is still parsing; falling back keeps the
+// module usable on its own, which is how the tests load it.
+const raw = await (globalThis.verbsText ?? fetch("verbs.txt").then((r) => r.text()));
+const stems = parse(raw).sort((a, b) => collate(a.name, b.name));
 const verbs = stems.flatMap((stem) => stem.verbs);
 const byName = new Map(verbs.map((verb) => [verb.name, verb]));
 const prefixes = [...new Set(verbs.map(prefixOf))].sort(collate);

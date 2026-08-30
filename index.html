@@ -15,12 +15,17 @@
   } catch (e) {}
 </script>
 <link rel="stylesheet" href="style.css">
-<!-- Without these the browser only learns about data.js once it has parsed
-     app.js, and about verbs.txt once it has run data.js — three round trips
-     before the largest file is even requested. -->
+<!-- The browser would otherwise only learn about data.js once it has parsed
+     app.js, and about verbs.txt once it has run data.js: three round trips
+     before the largest file is even asked for. -->
 <link rel="modulepreload" href="app.js">
 <link rel="modulepreload" href="data.js">
-<link rel="preload" href="verbs.txt" as="fetch" crossorigin>
+<script>
+  // Starting the fetch here rather than preloading it keeps the download off
+  // the critical path without depending on how a browser matches a preload
+  // hint to the request that follows it. app.js awaits this same promise.
+  globalThis.verbsText = fetch("verbs.txt").then((r) => r.text());
+</script>
 </head>
 <body>
 <header>
