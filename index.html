@@ -15,6 +15,12 @@
   } catch (e) {}
 </script>
 <link rel="stylesheet" href="style.css">
+<!-- Without these the browser only learns about data.js once it has parsed
+     app.js, and about verbs.txt once it has run data.js — three round trips
+     before the largest file is even requested. -->
+<link rel="modulepreload" href="app.js">
+<link rel="modulepreload" href="data.js">
+<link rel="preload" href="verbs.txt" as="fetch" crossorigin>
 </head>
 <body>
 <header>

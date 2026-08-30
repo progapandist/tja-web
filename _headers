@@ -1,0 +1,9 @@
+# Cloudflare Pages defaults every asset to max-age=0, must-revalidate, so a
+# reload re-checks all four files. These are versionless filenames, so the
+# window is short enough that a deploy is picked up quickly anyway.
+/*.css
+  Cache-Control: public, max-age=600
+/*.js
+  Cache-Control: public, max-age=600
+/verbs.txt
+  Cache-Control: public, max-age=600
