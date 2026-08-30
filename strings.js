@@ -1,7 +1,7 @@
 // The interface in two languages. The German itself is never translated: the
 // forms, the rection and the example sentence are the thing being learned.
 
-export const locales = ["en", "ru"];
+export const locales = ["en", "ru", "fr"];
 
 export function localeFromPath(pathname) {
   const first = pathname.split("/")[1];
@@ -87,5 +87,33 @@ export const ui = {
     lucky: "Мне повезёт",
     backToList: "К списку",
     reveal: "Показать",
+  },
+  fr: {
+    ...grammar,
+    lang: "fr",
+    title: "tja — verbes à particule allemands",
+    description: "Les verbes à particule allemands comme un bandit manchot : deux rouleaux, particules et radicaux, qui se filtrent l'un l'autre.",
+    searchPlaceholder: "Rechercher un verbe ou un sens…",
+    searchLabel: "Rechercher un verbe ou un sens",
+    resultsLabel: "Résultats de recherche",
+    prefixesLabel: "Particules",
+    stemsLabel: "Radicaux",
+    languageLabel: "Langue",
+    themeLabel: "Changer de thème",
+    prefix: "particule",
+    stem: "radical",
+    count: (n) => `${n} verbe${n > 1 ? "s" : ""}`,
+    terminalLong: "la version pour geeks, dans ton terminal ↗",
+    terminalShort: "terminal ↗",
+    contribute: "contribuer ↗",
+    dark: "sombre",
+    light: "clair",
+    prompt: "Qu'est-ce que ça veut dire ?",
+    inTheWild: "Dans la vraie vie",
+    randomVerb: "Verbe au hasard",
+    nextCard: "Suivant",
+    lucky: "J'ai de la chance",
+    backToList: "Retour à la liste",
+    reveal: "Afficher",
   },
 };

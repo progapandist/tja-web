@@ -8,7 +8,7 @@ const t = ui[locale];
 
 const raw = await (globalThis.verbsText ?? fetch("/verbs.txt").then((r) => r.text()));
 const stems = parse(raw).sort((a, b) => collate(a.name, b.name));
-if (globalThis.verbsRu) translate(stems, await globalThis.verbsRu);
+if (globalThis.verbsOverlay) translate(stems, await globalThis.verbsOverlay);
 const verbs = stems.flatMap((stem) => stem.verbs);
 const byName = new Map(verbs.map((verb) => [verb.name, verb]));
 const prefixes = [...new Set(verbs.map(prefixOf))].sort(collate);

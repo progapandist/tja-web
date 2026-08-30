@@ -27,9 +27,11 @@
   // the critical path without depending on how a browser matches a preload
   // hint to the request that follows it. app.js awaits this same promise.
   globalThis.verbsText = fetch("/verbs.txt").then((r) => r.text());
-  if (location.pathname.split("/")[1] === "ru") {
-    globalThis.verbsRu = fetch("/verbs.ru.txt").then((r) => r.text());
-  }
+  // Literal per-locale paths, not a template built from the locale segment,
+  // so stamp.js's string replacement can put a content hash on each one.
+  const overlays = { ru: "/verbs.ru.txt", fr: "/verbs.fr.txt" };
+  const overlay = overlays[location.pathname.split("/")[1]];
+  if (overlay) globalThis.verbsOverlay = fetch(overlay).then((r) => r.text());
 </script>
 </head>
 <body>

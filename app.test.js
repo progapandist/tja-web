@@ -47,6 +47,20 @@ test("search reaches the meaning, not just the German", async () => {
   expect(names("annehm")[0]).toBe("annehmen");
 });
 
+// Same shape as the Russian search test above, over the French overlay.
+test("search reaches the meaning in French too", async () => {
+  const fr = translate(parse(raw), await Bun.file("verbs.fr.txt").text())
+    .sort((a, b) => collate(a.name, b.name))
+    .flatMap((stem) => stem.verbs);
+  const names = (q) => search(fr, q).map((v) => v.name);
+
+  const accepter = names("accepter");
+  expect(accepter).toContain("annehmen");
+  expect(accepter[0]).toBe("annehmen"); // the entry that opens with the word
+  expect(names("réussir un examen")).toContain("bestehen"); // every word, not the phrase
+  expect(names("xyzzy")).toEqual([]);
+});
+
 test("search ignores umlauts, spelled either way", () => {
   const names = (q) => search(verbs, q).map((v) => v.name);
   expect(names("ubernehm")[0]).toBe("übernehmen");
@@ -72,6 +86,21 @@ test("the Russian layer covers the data and keeps the homographs apart", async (
   const [textual, ferry] = all.filter((verb) => verb.name === "übersetzen");
   expect(textual.official).toContain("переводить");
   expect(ferry.official).toContain("переправ");
+});
+
+// Same shape as the Russian test above, over the French overlay: every entry
+// gets its own line and the two übersetzen homographs don't swap meanings.
+test("the French layer covers the data and keeps the homographs apart", async () => {
+  const fr = await Bun.file("verbs.fr.txt").text();
+  const english = parse(raw).flatMap((stem) => stem.verbs);
+  const translated = translate(parse(raw), fr).flatMap((stem) => stem.verbs);
+
+  expect(translated.every((verb, i) => verb.official !== english[i].official)).toBe(true);
+  expect(translated.every((verb) => verb.official && verb.colloquial && verb.english)).toBe(true);
+
+  const [textual, ferry] = translated.filter((verb) => verb.name === "übersetzen");
+  expect(textual.official).toContain("traduire");
+  expect(ferry.official).toContain("traverser");
 });
 
 // A German class says Präteritum, not "past" — the terms name German

@@ -12,7 +12,7 @@ const stamped = {};
 
 // The leaves first: app.js imports data.js and strings.js, so its own hash
 // only settles once their URLs are written into it.
-for (const file of ["data.js", "strings.js", "style.css", "verbs.txt", "verbs.ru.txt"]) {
+for (const file of ["data.js", "strings.js", "style.css", "verbs.txt", "verbs.ru.txt", "verbs.fr.txt"]) {
   stamped[file] = `${file}?v=${hash(file)}`;
 }
 
@@ -26,7 +26,7 @@ for (const file of ["data.js", "strings.js"]) {
 // The data fetch inside app.js is a fallback for when index.html has not
 // started it, but an unversioned URL served immutable would pin a stale copy
 // for a year, so it gets a hash like everything else.
-for (const file of ["verbs.txt", "verbs.ru.txt"]) {
+for (const file of ["verbs.txt", "verbs.ru.txt", "verbs.fr.txt"]) {
   app = app.replaceAll(`"/${file}"`, `"/${stamped[file]}"`);
 }
 writeFileSync(dist + "app.js", app);

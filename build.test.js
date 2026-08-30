@@ -6,7 +6,7 @@
 import { expect, test, beforeAll } from "bun:test";
 import { existsSync, readFileSync } from "node:fs";
 
-const pages = ["", "en", "ru"].map((dir) => (dir ? `dist/${dir}/index.html` : "dist/index.html"));
+const pages = ["", "en", "ru", "fr"].map((dir) => (dir ? `dist/${dir}/index.html` : "dist/index.html"));
 
 beforeAll(() => {
   const built = Bun.spawnSync(["make", "dist"]);
@@ -75,7 +75,7 @@ test("the inline loader and strings.js agree on the locales", async () => {
   const html = readFileSync("dist/index.html", "utf8");
 
   for (const code of locales.filter((c) => c !== "en")) {
-    expect(html).toContain(`=== "${code}"`);
+    expect(html).toContain(`${code}:`);
     expect(existsSync(`dist/verbs.${code}.txt`)).toBe(true);
     expect(existsSync(`dist/${code}/index.html`)).toBe(true);
   }
