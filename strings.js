@@ -68,7 +68,7 @@ export const ui = {
     prefix: "приставка",
     stem: "корень",
     count: (n) => `${n} ${plural(n, "глагол", "глагола", "глаголов")}`,
-    terminalLong: "версия для терминала ↗",
+    terminalLong: "терминал ↗",
     terminalShort: "терминал ↗",
     contribute: "гитхаб ↗",
     dark: "тёмная",
