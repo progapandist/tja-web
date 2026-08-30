@@ -449,7 +449,7 @@ find(".contrib:not(.nerdy)").textContent = t.contribute;
 find("#locale").replaceChildren(
   ...locales.map((code) => {
     const link = document.createElement("a");
-    link.href = code === "en" ? "/" : `/${code}`;
+    link.href = code === "en" ? "/" : `/${code}/`; // the trailing slash avoids a redirect
     link.textContent = code.toUpperCase();
     link.className = code === locale ? "on" : "";
     if (code === locale) link.setAttribute("aria-current", "true");
