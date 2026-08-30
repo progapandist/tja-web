@@ -975,3 +975,42 @@ mitzählen|compter, être pris en compte|« zählt das mit? » = ça compte ?|
 nachzählen|recompter|« noch mal nachzählen » = recompter|Recomptez, s'il vous plaît.
 zusammenzählen|additionner|« alles zusammenzählen » = additionner le tout|Additionne les montants.
 dazuzählen|ajouter au compte, inclure|« die Kinder dazuzählen » = compter aussi les enfants|Ajoute les frais.
+
+=packen|attraper ; emballer
+packen|attraper, saisir ; emballer, gérer (familier)|« ich pack das nicht » = je n'y arrive pas, je craque|Elle l'attrape par le bras.
+einpacken|emballer, faire ses valises|« du kannst einpacken » = tu peux plier bagage, c'est fichu pour toi|Je fais mes valises.
+auspacken|déballer ; tout balancer, avouer (à la police, à la presse)|« er hat ausgepackt » = il a craché le morceau, tout avoué|Les enfants déballent les cadeaux.
+verpacken|emballer (un produit)|la formule sur chaque colis : « verpackt und versandt » = emballé et expédié|Le produit est emballé de façon écologique.
+anpacken|s'attaquer à (un problème), empoigner|« mit anpacken » = mettre la main à la pâte|Il faut s'attaquer à ce problème.
+zupacken|mettre la main à la pâte, ne pas avoir froid aux yeux|« kräftig zupacken » — se dit de quelqu'un qui n'a pas peur de l'effort|Elle met la main à la pâte quand il le faut.
+
+=lernen|apprendre
+lernen|apprendre, étudier|« lernen » pour l'école et les compétences, « studieren » seulement pour l'université|Il apprend du vocabulaire tous les jours.
+erlernen|apprendre, acquérir (une compétence, plus soutenu que lernen)|le mot des CV et des descriptions de formation : « eine Sprache erlernen »|Elle a appris le métier en trois ans.
+verlernen|désapprendre, perdre (une compétence faute de pratique)|« das verlernt man nie » = ça ne s'oublie pas, comme le vélo|J'ai presque désappris à danser.
+anlernen|former (un nouvel employé), montrer les ficelles|le mot de la première semaine au travail : « jemanden anlernen »|Le maître forme la nouvelle apprentie.
+umlernen|se reconvertir, apprendre autre chose|reconversion professionnelle : « beruflich umlernen müssen »|Après son licenciement, il a dû se reconvertir.
+auslernen|terminer sa formation ; presque toujours à la forme négative|expression figée : « man lernt nie aus » = on n'arrête jamais d'apprendre|On n'arrête vraiment jamais d'apprendre.
+
+=schauen|regarder
+schauen|regarder|variante sud-allemande/autrichienne/suisse de « gucken » ; « schau mal! » = regarde-moi ça !|Regarde comme c'est beau !
+anschauen|regarder (un film, sich etwas anschauen)|« schauen wir uns das an » — la façon habituelle de proposer de regarder quelque chose ensemble|On regarde un film ce soir.
+zuschauen|regarder, observer (bei +D)|le mot pour un spectateur sur place, pas devant un écran|Les enfants regardent les artisans travailler.
+wegschauen|détourner le regard, fermer les yeux (sur quelque chose)|registre moral : « wegschauen, wenn etwas Schlimmes passiert »|Beaucoup ont simplement détourné le regard.
+vorbeischauen|passer voir, faire un saut (visite informelle)|la façon décontractée de dire qu'on va passer ; se conjugue avec sein, comme une visite|Je passerai te voir plus tard.
+nachschauen|vérifier, aller voir|« schau mal nach, ob… » — la façon courante de demander à quelqu'un de vérifier|Tu peux vérifier si la porte est fermée ?
+
+=bilden|former ; éduquer
+bilden|former, constituer ; éduquer, cultiver (l'esprit)|« sich bilden » = s'instruire, se cultiver|Les élèves forment un groupe.
+ausbilden|former (professionnellement), qualifier (des apprentis)|le mot derrière « Ausbildung » — dans chaque offre d'emploi|L'entreprise forme dix apprentis.
+fortbilden|se former en continu, se perfectionner (sich fortbilden)|un peu plus soutenu que weiterbilden|Les enseignants doivent se former régulièrement.
+weiterbilden|se perfectionner, continuer sa formation (sich weiterbilden)|le mot courant pour la formation continue|Je veux me perfectionner professionnellement.
+umbilden|remanier (un gouvernement), réorganiser|registre politique : « die Regierung umbilden »|Le président remanie le gouvernement.
+einbilden|s'imaginer, se figurer (à tort, presque toujours avec « sich etwas einbilden »)|« eingebildet » comme adjectif = prétentieux, imbu de soi-même|Tu te l'imagines, c'est tout.
+
+=kochen|cuisiner ; bouillir
+kochen|cuisiner ; bouillir|« ich koche » = je prépare le dîner, la façon la plus courante de le dire|Elle cuisine pour la famille tous les soirs.
+abkochen|faire bouillir (l'eau) pour la purifier|vocabulaire du camping et de la survie : « Wasser abkochen » avant de la boire|Au camp, on doit faire bouillir l'eau.
+verkochen|trop cuire, réduire jusqu'à se déliter|mésaventure de cuisine : « die Kartoffeln sind verkocht »|La soupe a complètement réduit.
+auskochen|stériliser en faisant bouillir ; manigancer, mijoter un plan (familier)|« was hast du da wieder ausgekocht? » = qu'est-ce que tu as encore manigancé ?|Ils ont mijoté un plan tous les deux.
+einkochen|conserver, mettre en conserve (fruits ou légumes)|le mot traditionnel de la cuisine familiale : « Marmelade einkochen »|Ma grand-mère fait des confitures tous les étés.

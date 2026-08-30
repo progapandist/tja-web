@@ -8,7 +8,7 @@
 // Then it writes the pages: one app page per locale and one verb index per
 // locale, each with its own title, canonical, hreflang set and social card,
 // plus the sitemap. The app is a JS-rendered screen that only ever holds one
-// verb, so the verb index is what gives a crawler all 792 of them to read.
+// verb, so the verb index is what gives a crawler the whole collection to read.
 import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { parse, prefixOf, forms, collate, translate } from "./data.js";
@@ -18,6 +18,13 @@ const SITE = "https://tja.progapanda.org";
 const OG_LOCALE = { en: "en_US", ru: "ru_RU", fr: "fr_FR" };
 const dist = "dist/";
 const hash = (file) => createHash("md5").update(readFileSync(dist + file)).digest("hex").slice(0, 8);
+
+// The one place these get counted. A translation overlay only replaces text
+// fields, never adds or drops a verb, so the count is the same in every
+// locale and comes from the German source rather than from any of them.
+const BASE_STEMS = parse(readFileSync("verbs.txt", "utf8"));
+const VERB_COUNT = BASE_STEMS.reduce((n, stem) => n + stem.verbs.length, 0);
+const STEM_COUNT = BASE_STEMS.length;
 
 // A replacement that fails the build instead of silently doing nothing. Every
 // substitution below leans on an exact string in index.html that someone could
@@ -113,6 +120,7 @@ function head({ code, canonical, title, description, keywords, pathFor, jsonld }
 function appPage(code) {
   const t = ui[code];
   const canonical = SITE + appPath(code);
+  const description = t.description(VERB_COUNT, STEM_COUNT);
   const jsonld = {
     "@context": "https://schema.org",
     "@graph": [
@@ -121,7 +129,7 @@ function appPage(code) {
         "@id": `${SITE}/#website`,
         url: `${SITE}/`,
         name: "tja",
-        description: t.description,
+        description,
         inLanguage: t.lang,
       },
       {
@@ -134,7 +142,7 @@ function appPage(code) {
         operatingSystem: "Any web browser",
         browserRequirements: "Requires JavaScript",
         inLanguage: t.lang,
-        description: t.description,
+        description,
         isAccessibleForFree: true,
         offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
         learningResourceType: "flashcards",
@@ -152,12 +160,12 @@ function appPage(code) {
   page = must(
     page,
     '<meta name="description" content="German prefix verbs as a one-armed bandit: two reels, prefixes and stems, that filter each other.">',
-    `<meta name="description" content="${escape(t.description)}">`,
+    `<meta name="description" content="${escape(description)}">`,
   );
   page = must(
     page,
     "<!--seo-->",
-    head({ code, canonical, title: t.title, description: t.description, keywords: t.keywords, pathFor: appPath, jsonld }),
+    head({ code, canonical, title: t.title, description, keywords: t.keywords, pathFor: appPath, jsonld }),
   );
   // The crawler reads this static link; app.js writes the same one at runtime.
   page = must(
@@ -179,7 +187,7 @@ function docPage(code) {
   const t = ui[code];
   const canonical = SITE + docPath(code);
   const stems = stemsFor(code);
-  const verbCount = stems.reduce((n, stem) => n + stem.verbs.length, 0);
+  const indexTitle = t.indexTitle(VERB_COUNT);
 
   const jsonld = {
     "@context": "https://schema.org",
@@ -188,7 +196,7 @@ function docPage(code) {
         "@type": "CollectionPage",
         "@id": `${canonical}#page`,
         url: canonical,
-        name: t.indexTitle,
+        name: indexTitle,
         description: t.indexDescription,
         inLanguage: t.lang,
         isPartOf: { "@id": `${SITE}/#website` },
@@ -247,7 +255,7 @@ ${rows}
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light">
 <meta name="description" content="${escape(t.indexDescription)}">
-<title>${escape(t.indexTitle)}</title>
+<title>${escape(indexTitle)}</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>🎰</text></svg>">
 <script>
   // Same pre-paint theme read as the app, so moving between them never flashes.
@@ -257,7 +265,7 @@ ${rows}
   } catch (e) {}
 </script>
 <link rel="stylesheet" href="/${stamped["style.css"]}">
-${head({ code, canonical, title: t.indexTitle, description: t.indexDescription, keywords: t.keywords, pathFor: docPath, jsonld })}
+${head({ code, canonical, title: indexTitle, description: t.indexDescription, keywords: t.keywords, pathFor: docPath, jsonld })}
 </head>
 <body class="doc">
 <header>
@@ -268,8 +276,8 @@ ${head({ code, canonical, title: t.indexTitle, description: t.indexDescription, 
 
 <main>
   <h2 class="doc-title">${escape(t.indexHeading)}</h2>
-  <p class="doc-intro">${escape(t.indexIntro)}</p>
-  <p class="doc-count">${escape(t.count(verbCount))} · ${escape(t.stemsHeading(stems.length))}</p>
+  <p class="doc-intro">${escape(t.indexIntro(VERB_COUNT, STEM_COUNT))}</p>
+  <p class="doc-count">${escape(t.count(VERB_COUNT))} · ${escape(t.stemsHeading(STEM_COUNT))}</p>
   <nav class="jump" aria-label="${escape(t.stemsLabel)}">${jump}</nav>
 ${sections}
 </main>

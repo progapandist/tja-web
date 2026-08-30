@@ -472,7 +472,7 @@ labelTheme();
 // Everything the locale decides that is not drawn by render().
 document.documentElement.lang = t.lang;
 document.title = t.title;
-document.querySelector('meta[name="description"]').content = t.description;
+document.querySelector('meta[name="description"]').content = t.description(verbs.length, stems.length);
 find("#count").textContent = t.count(verbs.length);
 find("#t-prefix").textContent = t.prefix;
 find("#t-stem").textContent = t.stem;

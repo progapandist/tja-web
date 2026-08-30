@@ -7,8 +7,12 @@
 import { expect, test, beforeAll } from "bun:test";
 import { existsSync, readFileSync } from "node:fs";
 import { locales, ui } from "./strings.js";
+import { parse } from "./data.js";
 
 const SITE = "https://tja.progapanda.org";
+const BASE_STEMS = parse(readFileSync("verbs.txt", "utf8"));
+const VERB_COUNT = BASE_STEMS.reduce((n, stem) => n + stem.verbs.length, 0);
+const STEM_COUNT = BASE_STEMS.length;
 const appPath = (code) => (code === "en" ? "/" : `/${code}/`);
 const docPath = (code) => (code === "en" ? "/verbs/" : `/${code}/verbs/`);
 
@@ -161,7 +165,22 @@ test("every page declares its own language and title", () => {
 
     const doc = read(`dist/${code}/verbs/index.html`);
     expect(tag(doc, /<html lang="([^"]+)"/)).toBe(code);
-    expect(tag(doc, /<title>([^<]+)<\/title>/)).toBe(ui[code].indexTitle);
+    expect(tag(doc, /<title>([^<]+)<\/title>/)).toBe(ui[code].indexTitle(VERB_COUNT));
+  }
+});
+
+// The count used to be a literal "792" copy-pasted into nine strings across
+// three locales, and the vocabulary is meant to grow. Every page that states
+// a number states the one the data actually has right now.
+test("every stated verb count matches the data, not a stale copy", () => {
+  for (const code of locales) {
+    const app = read(`dist/${code}/index.html`);
+    expect(app).toContain(String(VERB_COUNT));
+    expect(app).toContain(String(STEM_COUNT));
+
+    const doc = read(`dist/${code}/verbs/index.html`);
+    expect(doc).toContain(String(VERB_COUNT));
+    expect(doc).toContain(String(STEM_COUNT));
   }
 });
 
