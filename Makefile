@@ -1,4 +1,4 @@
-PROJECT ?= tja
+PROJECT ?= tja-265
 
 # The files the browser needs. Everything else — tests, docs, node_modules —
 # stays out of the upload.
