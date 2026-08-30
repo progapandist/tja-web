@@ -25,6 +25,21 @@ test("forms move the prefix the way German does", () => {
   expect(nebensatz(find("teilnehmen"))).toBe("…, weil sie daran teilnimmt.");
 });
 
+// The reader searches in whatever language the card is in, so the meaning text
+// has to be reachable, ranked, and forgiving about ё and about phrases.
+test("search reaches the meaning, not just the German", async () => {
+  const ru = translate(parse(raw), await Bun.file("verbs.ru.txt").text()).flatMap((stem) => stem.verbs);
+  const names = (q) => search(ru, q).map((v) => v.name);
+
+  expect(names("принимать")[0]).toBe("annehmen"); // the meaning beats the anecdote
+  expect(names("сдать экзамен")).toContain("bestehen"); // every word, not the phrase
+  expect(names("повезёт")).toEqual(names("повезет")); // ё and е are the same key
+  expect(names("xyzzy")).toEqual([]);
+
+  // German still finds German, whichever language the card is in.
+  expect(names("annehm")[0]).toBe("annehmen");
+});
+
 test("search ignores umlauts, spelled either way", () => {
   const names = (q) => search(verbs, q).map((v) => v.name);
   expect(names("ubernehm")[0]).toBe("übernehmen");

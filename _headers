@@ -1,10 +1,11 @@
-# The filenames carry no content hash, so index.html and app.js must never
-# disagree about which deploy they are from. no-cache keeps them in the
-# browser's cache but revalidates every time: a 304 costs a round trip and no
-# body, and a deploy can never be half-applied.
+# Every asset URL in index.html carries a content hash, so a URL that resolves
+# today will never mean anything else. index.html itself is left on Cloudflare's
+# default, which revalidates on every load.
 /*.css
-  Cache-Control: no-cache
+  Cache-Control: public, max-age=31536000, immutable
 /*.js
-  Cache-Control: no-cache
+  Cache-Control: public, max-age=31536000, immutable
 /verbs.txt
-  Cache-Control: no-cache
+  Cache-Control: public, max-age=31536000, immutable
+/verbs.ru.txt
+  Cache-Control: public, max-age=31536000, immutable

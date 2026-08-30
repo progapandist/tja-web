@@ -15,10 +15,11 @@ test:
 # Each locale gets a real index.html. A _redirects rewrite to /index.html does
 # not survive Cloudflare stripping "index.html" from the URL: /ru ends up back
 # at / and the locale is lost.
-dist: $(FILES)
+dist: $(FILES) stamp.js
 	rm -rf dist && mkdir -p dist/en dist/ru && cp $(FILES) dist/
-	cp index.html dist/en/index.html
-	cp index.html dist/ru/index.html
+	node stamp.js
+	cp dist/index.html dist/en/index.html
+	cp dist/index.html dist/ru/index.html
 
 deploy: test dist
 	wrangler pages deploy dist --project-name $(PROJECT)

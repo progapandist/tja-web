@@ -53,8 +53,10 @@ export const nebensatz = (v) => `…, weil sie ${object(v)}${prefixOf(v)}${v.ste
 
 // Umlaut folding, so a query typed without them still matches. Trying both
 // forms lets "uber" and "ueber" find übernehmen.
-const F = { ä: "a", ö: "o", ü: "u", ß: "s" }, E = { ä: "ae", ö: "oe", ü: "ue", ß: "ss" };
-export const fold = (s) => s.replace(/[äöüß]/g, (c) => F[c]);
+// ё is folded to е as well: Russian is written both ways and nobody reaches
+// for the ё key to search.
+const F = { "ä": "a", "ö": "o", "ü": "u", "ß": "s", "ё": "е" }, E = { "ä": "ae", "ö": "oe", "ü": "ue", "ß": "ss" };
+export const fold = (s) => s.replace(/[äöüßё]/g, (c) => F[c]);
 const expand = (s) => s.replace(/[äöüß]/g, (c) => E[c]);
 export const collate = (a, b) => fold(a).localeCompare(fold(b), "de");
 
@@ -82,8 +84,27 @@ export function search(verbs, query) {
     if (name.startsWith(q)) { scored.push([v, -1000 + name.length]); continue; }
     let n = fuzzy(name, q);
     if (n < 0) n = fuzzy(expand(v.name.toLowerCase()), expand(query.trim().toLowerCase()));
-    if (n >= 0) scored.push([v, n]);
-    else if (fold(`${v.official} ${v.colloquial} ${v.use}`.toLowerCase()).includes(q)) scored.push([v, 1000]);
+    if (n >= 0) {
+      scored.push([v, n]);
+      continue;
+    }
+    // Nothing in the name, so try what the verb means. This is the only way in
+    // for a query in the reader's own language, where the German is no help.
+    const meaning = fold(`${v.official} ${v.colloquial} ${v.use} ${v.english}`.toLowerCase());
+    const at = meaning.indexOf(q);
+    if (at >= 0) {
+      // A hit at the start of a word beats one buried inside a longer one, and
+      // an early hit beats a late one: the meaning comes before the anecdote.
+      const startsWord = at === 0 || !/\p{L}/u.test(meaning[at - 1]);
+      scored.push([v, 1000 + (startsWord ? 0 : 400) + at]);
+      continue;
+    }
+    // "сдать экзамен" should still find a card that says "сдать (экзамен)",
+    // so a phrase falls back to needing every word somewhere in the entry.
+    const words = q.split(/\s+/).filter(Boolean);
+    if (words.length > 1 && words.every((word) => meaning.includes(word))) {
+      scored.push([v, 2000]);
+    }
   }
   return scored.sort((a, b) => a[1] - b[1]).map(([v]) => v);
 }
