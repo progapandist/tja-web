@@ -134,6 +134,21 @@ test("the data fetch starts before the stylesheet blocks it", () => {
   }
 });
 
+// The stem headings on the index stick directly under its header, at an offset
+// that has to equal the header's height. The two drifted apart once and the
+// headings hid behind the bar on a narrow screen, where the bar wrapped.
+test("the index headings stick exactly below the index header", () => {
+  const css = readFileSync("style.css", "utf8");
+  const at = (selector, property) =>
+    css.match(new RegExp(`${selector}\\s*\\{[^}]*${property}:\\s*(\\d+)px`))?.[1];
+  const header = at("body\\.doc header", "min-height");
+  expect(header).toBeDefined();
+  expect(at("body\\.doc h3", "top")).toBe(header);
+  expect(at("body\\.doc h3", "scroll-margin-top")).toBe(header);
+  // Wrapping is what made the bar taller than the offset in the first place.
+  expect(css).toMatch(/body\.doc header\s*\{[^}]*flex-wrap:\s*nowrap/);
+});
+
 // ---- what the crawler reads ------------------------------------------------
 
 // Each locale has to declare itself, or a search engine shows the Russian page

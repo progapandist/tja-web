@@ -203,10 +203,10 @@ test("the locale links carry the current card", () => {
   win.document.querySelector("#test").click();
 });
 
-// Space is contextual, the button is not. Tapping space answers the card in
-// front of you and then keeps rolling, which is the whole flow one-handed; the
-// footer button says next and only ever does next.
-test("space reveals first, the next button always rolls", () => {
+// Tapping answers the card in front of you and then keeps rolling, which is the
+// whole flow one-handed. Space and the next button are the same gesture; only
+// the label is fixed, so it never tracks what the last press did.
+test("space and the next button reveal first, then roll", () => {
   const press = (key) => win.dispatchEvent(new win.KeyboardEvent("keydown", { key }));
   const label = () => win.document.querySelector("#spin").firstChild.textContent.trim();
 
@@ -229,10 +229,15 @@ test("space reveals first, the next button always rolls", () => {
   expect(win.document.body.classList.contains("revealed")).toBe(true);
   expect(word()).toBe(word0);
 
-  // The button is a next button in either half of the guess.
-  win.document.querySelector("#spin").click();
+  // The button does what space does: a phone has no space bar, so tapping next
+  // has to answer the card before it rolls, or the meaning is unreachable.
+  win.document.querySelector("#spin").click(); // rolls, hidden
   expect(win.document.body.classList.contains("revealed")).toBe(false);
-  win.document.querySelector("#spin").click();
+  const hidden = word();
+  win.document.querySelector("#spin").click(); // reveals that same card
+  expect(win.document.body.classList.contains("revealed")).toBe(true);
+  expect(word()).toBe(hidden);
+  win.document.querySelector("#spin").click(); // and only then rolls on
   expect(win.document.body.classList.contains("revealed")).toBe(false);
 
   win.document.querySelector("#test").click();

@@ -598,6 +598,9 @@ body.doc header {
   top: 0;
   background: var(--paper);
   z-index: 5;
+  /* The stem headings stick underneath at a fixed offset, so this bar has to
+     keep its height. Wrapping to a second line hid them behind it. */
+  flex-wrap: nowrap;
 }
 
 body.doc header h1 { font-size: 26px; margin-right: auto; }
@@ -709,4 +712,11 @@ li .f { font-family: var(--mono); font-size: 12px; color: var(--dim); }
 @media (max-width: 860px) {
   body.doc section li { grid-template-columns: 1fr; gap: 4px; }
   li .k { justify-self: start; padding: 3px 10px; }
+}
+
+/* Narrow enough that the back link would wrap the bar onto a second line. The
+   logo and the footer both lead back to the machine, so the link goes instead
+   of the heading offset going wrong. */
+@media (max-width: 560px) {
+  body.doc header .contrib { display: none; }
 }

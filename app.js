@@ -285,9 +285,10 @@ function reveal() {
   render();
 }
 
-// Space is the one key you keep tapping, so it answers the card in front of
-// you before it rolls a new one. The footer button it shares a shortcut with
-// stays a next button, labelled and behaving the same in either half.
+// Answer the card in front of you, then roll from the next press on. The
+// footer button and the space bar both land here: on a phone there is no space
+// bar, so the button has to carry the whole flow on its own. Its label stays
+// "next" either way rather than tracking what the last press did.
 function revealOrNext() {
   if (state.testing && !state.revealed) reveal();
   else nextCard();
@@ -395,7 +396,7 @@ function toggleTesting() {
   render({ reposition: true, turns: state.testing ? 3 : 0 });
 }
 
-find("#spin").onclick = nextCard;
+find("#spin").onclick = revealOrNext;
 find("#test").onclick = toggleTesting;
 
 addEventListener("keydown", (event) => {
