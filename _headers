@@ -1,9 +1,10 @@
-# Cloudflare Pages defaults every asset to max-age=0, must-revalidate, so a
-# reload re-checks all four files. These are versionless filenames, so the
-# window is short enough that a deploy is picked up quickly anyway.
+# The filenames carry no content hash, so index.html and app.js must never
+# disagree about which deploy they are from. no-cache keeps them in the
+# browser's cache but revalidates every time: a 304 costs a round trip and no
+# body, and a deploy can never be half-applied.
 /*.css
-  Cache-Control: public, max-age=600
+  Cache-Control: no-cache
 /*.js
-  Cache-Control: public, max-age=600
+  Cache-Control: no-cache
 /verbs.txt
-  Cache-Control: public, max-age=600
+  Cache-Control: no-cache
