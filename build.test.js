@@ -118,6 +118,22 @@ test("every locale overlay is served immutable", () => {
   }
 });
 
+// A browser holds an inline script until every stylesheet above it has loaded,
+// so a fetch below the link does not start until the CSS is in. That put the
+// largest file on the page behind the stylesheet and cost a visible pause on
+// first load, with nothing in the source to show for it.
+test("the data fetch starts before the stylesheet blocks it", () => {
+  for (const page of appPages) {
+    const html = read(page);
+    const fetchStarts = html.indexOf('globalThis.verbsText = fetch(');
+    const stylesheet = html.indexOf('rel="stylesheet"');
+    expect(fetchStarts).toBeGreaterThan(-1);
+    expect(`${page}: fetch before stylesheet`).toBe(
+      fetchStarts < stylesheet ? `${page}: fetch before stylesheet` : `${page}: fetch AFTER stylesheet`,
+    );
+  }
+});
+
 // ---- what the crawler reads ------------------------------------------------
 
 // Each locale has to declare itself, or a search engine shows the Russian page
