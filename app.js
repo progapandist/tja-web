@@ -395,7 +395,19 @@ addEventListener("keydown", (event) => {
   action();
 });
 
-addEventListener("resize", () => render({ reposition: true }));
+// A phone fires resize every time the URL bar slides away, and re-rendering
+// scrolls the selected row back into view, so the list fights the reader's
+// thumb. Only a real change of geometry is worth redrawing for.
+const viewport = () => [document.documentElement.clientWidth, document.documentElement.clientHeight];
+let [lastWidth, lastHeight] = viewport();
+addEventListener("resize", () => {
+  const [width, height] = viewport();
+  const changed = width !== lastWidth || height !== lastHeight;
+  const widthChanged = width !== lastWidth;
+  [lastWidth, lastHeight] = [width, height];
+  // Height alone only matters to the reels, whose rows are sized off it.
+  if (changed && (widthChanged || state.testing)) render({ reposition: true });
+});
 
 // ---- theme -----------------------------------------------------------------
 // The system preference decides until the reader overrules it, and then that

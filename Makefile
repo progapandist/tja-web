@@ -2,7 +2,7 @@ PROJECT ?= tja
 
 # The files the browser needs. Everything else — tests, docs, node_modules —
 # stays out of the upload.
-FILES := index.html style.css app.js data.js strings.js verbs.txt verbs.ru.txt _headers
+FILES := index.html 404.html style.css app.js data.js strings.js verbs.txt verbs.ru.txt _headers
 
 .PHONY: dev test dist deploy clean
 

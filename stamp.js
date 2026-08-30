@@ -23,6 +23,12 @@ let app = readFileSync(dist + "app.js", "utf8");
 for (const file of ["data.js", "strings.js"]) {
   app = app.replaceAll(`"./${file}"`, `"/${stamped[file]}"`);
 }
+// The data fetch inside app.js is a fallback for when index.html has not
+// started it, but an unversioned URL served immutable would pin a stale copy
+// for a year, so it gets a hash like everything else.
+for (const file of ["verbs.txt", "verbs.ru.txt"]) {
+  app = app.replaceAll(`"/${file}"`, `"/${stamped[file]}"`);
+}
 writeFileSync(dist + "app.js", app);
 stamped["app.js"] = `app.js?v=${hash("app.js")}`;
 

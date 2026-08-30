@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>tja — nothing here</title>
+<!-- Deliberately self-contained: this is the page you get when a file is
+     missing, so it must not depend on one. Without it Cloudflare answers an
+     unknown path with the app and a 200, and a mistyped asset URL looks like
+     a working request that returns HTML. -->
+<style>
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    background: #edeae1;
+    color: #1d1c19;
+    font: 16px/1.6 Futura, "Century Gothic", ui-sans-serif, system-ui, sans-serif;
+  }
+  b { font-size: 56px; letter-spacing: -0.02em; }
+  a { color: #ab5340; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #15151a; color: #e9e6dd; }
+    a { color: #cd7357; }
+  }
+</style>
+</head>
+<body>
+  <b>tja</b>
+  <p>Nothing at this address.</p>
+  <p><a href="/">Go to the verbs</a></p>
+</body>
+</html>
