@@ -67,6 +67,20 @@ test("the Russian layer covers the data and keeps the homographs apart", async (
   expect(ferry.official).toContain("переправ");
 });
 
+// A German class says Präteritum, not "past" — the terms name German
+// categories and translating them teaches the wrong word.
+test("the grammar terms stay German in every locale", async () => {
+  const { ui, locales } = await import("./strings.js");
+  for (const locale of locales) {
+    expect(ui[locale].present).toBe("Präsens");
+    expect(ui[locale].past).toBe("Präteritum");
+    expect(ui[locale].perfect).toBe("Perfekt");
+    expect(ui[locale].subclause).toBe("Nebensatz");
+    expect(ui[locale].separable).toBe("trennbar");
+    expect(ui[locale].inseparable).toBe("untrennbar");
+  }
+});
+
 // ---- the app, mounted in a DOM ----
 let win;
 let app;

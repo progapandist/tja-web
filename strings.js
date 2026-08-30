@@ -18,8 +18,22 @@ function plural(n, one, few, many) {
   return many;
 }
 
+// The grammar terms are German in every locale and never translated. The
+// Präteritum is not the English past tense, and a learner needs the word their
+// class actually uses; the terminal version has always labelled them this way.
+const grammar = {
+  present: "Präsens",
+  past: "Präteritum",
+  perfect: "Perfekt",
+  subclause: "Nebensatz",
+  separable: "trennbar",
+  inseparable: "untrennbar",
+  base: "Stamm",
+};
+
 export const ui = {
   en: {
+    ...grammar,
     lang: "en",
     title: "tja — German prefix verbs",
     description: "German prefix verbs as a one-armed bandit: two reels, prefixes and stems, that filter each other.",
@@ -39,14 +53,7 @@ export const ui = {
     dark: "dark",
     light: "light",
     prompt: "What does it mean?",
-    present: "present",
-    past: "past",
-    perfect: "perfect",
-    subclause: "subclause",
     inTheWild: "In the wild",
-    separable: "separable",
-    inseparable: "inseparable",
-    base: "base verb",
     randomVerb: "Random verb",
     nextCard: "Next card",
     lucky: "I’m feeling lucky",
@@ -55,6 +62,7 @@ export const ui = {
     reveal: "Reveal",
   },
   ru: {
+    ...grammar,
     lang: "ru",
     title: "tja — немецкие глаголы с приставками",
     description: "Немецкие глаголы с приставками как однорукий бандит: два барабана, приставки и корни, которые фильтруют друг друга.",
@@ -74,16 +82,9 @@ export const ui = {
     dark: "тёмная",
     light: "светлая",
     prompt: "Что это значит?",
-    present: "настоящее",
-    past: "прошедшее",
-    perfect: "перфект",
-    subclause: "придаточное",
     inTheWild: "Как говорят",
-    separable: "отделяемая",
-    inseparable: "неотделяемая",
-    base: "без приставки",
     randomVerb: "Случайный глагол",
-    nextCard: "Дальше",
+    nextCard: "Ещё",
     lucky: "Мне повезёт",
     backToList: "К списку",
     search: "Поиск",
