@@ -228,7 +228,7 @@ function cardHTML(verb) {
   const { present, past, perfect } = forms(verb);
   const prefix = prefixOf(verb);
   const kind = !prefix ? t.base : verb.sep ? t.separable : t.inseparable;
-  const reveal = `<button class="primary reveal" type="button">${t.reveal} <kbd>enter</kbd></button>`;
+  const reveal = `<button class="primary reveal" type="button">${t.reveal} <kbd>space / enter</kbd></button>`;
 
   return `
     <p class="prompt">${t.prompt}</p>
