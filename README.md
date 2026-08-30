@@ -64,15 +64,3 @@ verb|separable t/f|official|colloquial|example|use|example in English|aux overri
 
 Taps do everything the keys do. The columns scroll, the reels take a flick,
 and the buttons along the bottom cover the rest.
-
-## Deploying
-
-Cloudflare Pages, with DNS left at DigitalOcean.
-
-```sh
-make deploy    # tests, then publish
-```
-
-Cloudflare points new projects at Workers Static Assets instead. Workers
-Custom Domains need the zone hosted on Cloudflare, this one sits at
-DigitalOcean, so Pages it is.
