@@ -488,6 +488,40 @@ test("space and the next button reveal first, then roll", () => {
   win.document.querySelector("#test").click();
 });
 
+// The reel draws three copies of the list in test mode, so it looks endless
+// and has to behave that way. It used to stop dead at the last row: rolling
+// down from the final prefix put you back on the same one.
+test("the reel rolls over in test mode and stops at the ends when browsing", () => {
+  const press = (key) => win.dispatchEvent(new win.KeyboardEvent("keydown", { key }));
+  const at = () => win.document.querySelector("#prefix .item.on").textContent;
+  const rows = () => shown("prefix");
+
+  win.document.querySelector("#test").click(); // into the bandit
+  expect(win.document.body.classList.contains("testing")).toBe(true);
+
+  // Walk to the last row, then one more: it comes back round to the first.
+  for (let i = 0; i < rows().length * 2; i++) press("ArrowRight");
+  const last = rows()[rows().length - 1];
+  while (at() !== last) press("ArrowRight");
+  press("ArrowRight");
+  expect(at()).toBe(rows()[0]);
+  press("ArrowLeft");
+  expect(at()).toBe(last); // and back the other way
+
+  win.document.querySelector("#test").click(); // back to browsing
+  expect(win.document.body.classList.contains("testing")).toBe(false);
+
+  // A plain list stops where it ends.
+  for (let i = 0; i < rows().length * 2; i++) press("ArrowRight");
+  expect(at()).toBe(rows()[rows().length - 1]);
+  press("ArrowRight");
+  expect(at()).toBe(rows()[rows().length - 1]);
+  for (let i = 0; i < rows().length * 2; i++) press("ArrowLeft");
+  expect(at()).toBe(rows()[0]);
+  press("ArrowLeft");
+  expect(at()).toBe(rows()[0]);
+});
+
 test("test mode is the one-armed bandit, and hides the meaning until revealed", () => {
   expect(items("prefix").length).toBe(shown("prefix").length); // browse: one copy
   win.document.querySelector("#test").click();

@@ -78,6 +78,7 @@ function Column(element, labelOf, onPick, classOf) {
   let keys = []; // one key per option, in display order
   let selectedIndex = () => 0;
   let copiesDrawn = 0;
+  let resting = 0; // the row the reel last settled on, for spotting a wrap
   let drag = null;
 
   // Not every browser swallows the click that follows a drag. Without this, a
@@ -92,9 +93,14 @@ function Column(element, labelOf, onPick, classOf) {
     return -(keys.length + i) * itemHeight() + (element.clientHeight - itemHeight()) / 2;
   }
 
+  // Three copies of the list are on screen in test mode, so the reel looks
+  // endless and has to behave that way: rolling off one end comes back on the
+  // other. Browsing, it is an ordinary list and stops at its ends.
+  const wrap = (i) => (state.testing ? ((i % keys.length) + keys.length) % keys.length
+                                     : Math.min(keys.length - 1, Math.max(0, i)));
+
   function step(by) {
-    const next = Math.min(keys.length - 1, Math.max(0, selectedIndex() + by));
-    onPick(keys[next]);
+    onPick(keys[wrap(selectedIndex() + by)]);
   }
 
   function draw(options, nextKeys, selected) {
@@ -124,6 +130,7 @@ function Column(element, labelOf, onPick, classOf) {
         });
       }
       strip.replaceChildren(...items);
+      resting = selected;
     }
 
     [...strip.children].forEach((item, i) => {
@@ -144,14 +151,32 @@ function Column(element, labelOf, onPick, classOf) {
   function moveTo(i, turns = 0, ms = 240) {
     if (!state.testing) return; // the browsing list scrolls on its own
     element.scrollTop = 0; // browsing may have left the list scrolled
-    const y = restingPosition(i);
-    const from = y + turns * keys.length * itemHeight();
+    const n = keys.length;
+    const home = restingPosition(i);
+
+    // Rolling off one end lands on the other: one row away on screen, but a
+    // whole list away by index. Aim at the copy that really is next door and
+    // settle onto the middle one once the animation is done, or the reel
+    // rewinds the entire list to reach a row it was already beside.
+    let shift = 0;
+    if (!turns && n > 1) {
+      if (resting === n - 1 && i === 0) shift = -1;
+      else if (resting === 0 && i === n - 1) shift = 1;
+    }
+    const y = home + shift * n * itemHeight();
+    const from = y + turns * n * itemHeight();
+    resting = i;
+
     strip.style.transform = `translateY(${y}px)`;
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    strip.animate([{ transform: `translateY(${from}px)` }, { transform: `translateY(${y}px)` }], {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      strip.style.transform = `translateY(${home}px)`;
+      return;
+    }
+    const run = strip.animate([{ transform: `translateY(${from}px)` }, { transform: `translateY(${y}px)` }], {
       duration: turns ? ms : 220,
       easing: turns ? "cubic-bezier(.16,.9,.28,1)" : "ease-out",
     });
+    if (shift) run?.finished?.then(() => (strip.style.transform = `translateY(${home}px)`)).catch(() => {});
   }
 
   element.addEventListener(
@@ -181,7 +206,7 @@ function Column(element, labelOf, onPick, classOf) {
     if (!drag) return;
     const dragged = drag.moved;
     const rows = Math.round((event.clientY - drag.startY) / itemHeight());
-    const landed = Math.min(keys.length - 1, Math.max(0, drag.startIndex - rows));
+    const landed = wrap(drag.startIndex - rows);
     const startIndex = drag.startIndex;
     drag = null;
 
