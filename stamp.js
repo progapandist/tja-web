@@ -16,6 +16,12 @@ import { locales, ui } from "./strings.js";
 
 const SITE = "https://tja.progapanda.org";
 const OG_LOCALE = { en: "en_US", ru: "ru_RU", fr: "fr_FR" };
+// DNS for this domain sits at DigitalOcean, not on Cloudflare's nameservers,
+// so the dashboard's automatic zone-wide injection isn't available — this is
+// the manual beacon instead, on every page except 404.html, which is kept
+// deliberately free of any asset it could fail to load.
+const ANALYTICS =
+  '<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon=\'{"token": "d95cf5310079475895877b0ef5dfb567"}\'></script>';
 const dist = "dist/";
 const hash = (file) => createHash("md5").update(readFileSync(dist + file)).digest("hex").slice(0, 8);
 
@@ -167,6 +173,7 @@ function appPage(code) {
     "<!--seo-->",
     head({ code, canonical, title: t.title, description, keywords: t.keywords, pathFor: appPath, jsonld }),
   );
+  page = must(page, "<!--analytics-->", ANALYTICS);
   // The crawler reads this static link; app.js writes the same one at runtime.
   page = must(
     page,
@@ -275,6 +282,7 @@ ${rows}
 </script>
 <link rel="stylesheet" href="/${stamped["style.css"]}">
 ${head({ code, canonical, title: indexTitle, description: t.indexDescription, keywords: t.keywords, pathFor: docPath, jsonld })}
+${ANALYTICS}
 </head>
 <body class="doc">
 <header>

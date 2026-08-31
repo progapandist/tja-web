@@ -261,6 +261,17 @@ test("the search console verification file ships", () => {
   expect(read(`dist/${token}`)).toContain(`google-site-verification: ${token}`);
 });
 
+// DNS for this domain is not on Cloudflare's nameservers, so the dashboard
+// can't inject the beacon itself — nothing else would catch a marker comment
+// left unreplaced, or the token quietly missing from a page.
+test("every page carries the analytics beacon except the 404", () => {
+  const beacon = 'src="https://static.cloudflareinsights.com/beacon.min.js"';
+  for (const page of allPages) {
+    expect(`${page}: beacon`).toBe(read(page).includes(beacon) ? `${page}: beacon` : `${page}: missing`);
+  }
+  expect(read("dist/404.html")).not.toContain("cloudflareinsights.com");
+});
+
 test("the sitemap lists every indexed page and robots points at it", () => {
   const sitemap = read("dist/sitemap.xml");
   for (const code of locales) {
