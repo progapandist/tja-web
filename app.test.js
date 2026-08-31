@@ -318,6 +318,75 @@ test("the stressed half of the word is bolded, matching separability", () => {
   query.dispatchEvent(new win.Event("input", { bubbles: true }));
 });
 
+// Separability is part of the prefix: separable über- and inseparable über are
+// two different prefixes spelled alike, and they take different stems. The
+// stem reel matched on the text alone, so it offered übernehmen while über-
+// was selected and then quietly switched you to the inseparable one.
+test("the stem reel only offers stems that take the selected prefix", () => {
+  const onPrefix = () => win.document.querySelector("#prefix .item.on");
+  const badge = () => win.document.querySelector(".badges li").textContent;
+  const stemLabels = () => shown("stem");
+
+  const setzen = [...win.document.querySelectorAll("#stem .item")].find((i) => i.textContent === "setzen");
+  setzen.click();
+  const übers = [...win.document.querySelectorAll("#prefix .item")].filter((i) => i.textContent === "über");
+  expect(übers.length).toBe(2);
+
+  const sep = übers.find((i) => i.classList.contains("sep"));
+  const insep = übers.find((i) => i.classList.contains("insep"));
+
+  sep.click();
+  expect(badge()).toBe("trennbar");
+  const withSep = stemLabels();
+  expect(withSep).not.toContain("nehmen"); // übernehmen is inseparable only
+
+  insep.click();
+  expect(badge()).toBe("untrennbar");
+  const withInsep = stemLabels();
+  expect(withInsep).toContain("nehmen");
+  expect(withInsep.length).toBeGreaterThan(withSep.length);
+});
+
+// Whatever the reel shows, picking it has to land there. A stem that could not
+// keep the selected prefix used to drag the selection somewhere else.
+test("picking a stem keeps the prefix and its separability", () => {
+  const state = () => ({
+    prefix: win.document.querySelector("#prefix .item.on").textContent,
+    kind: win.document.querySelector(".badges li").textContent,
+    stem: win.document.querySelector("#stem .item.on").textContent,
+  });
+
+  // Picking a stem changes which prefixes exist, so the reel has to be put
+  // back before each attempt or the row index means something else.
+  const perch = (seed, p) => {
+    [...win.document.querySelectorAll("#stem .item")].find((i) => i.textContent === seed).click();
+    const rows = [...win.document.querySelectorAll("#prefix .item")];
+    rows[Math.min(p, rows.length - 1)].click();
+    return state();
+  };
+
+  let moves = 0;
+  for (const seed of ["setzen", "fahren", "gehen", "nehmen"]) {
+    if (![...win.document.querySelectorAll("#stem .item")].some((i) => i.textContent === seed)) continue;
+    perch(seed, 0);
+    const prefixCount = shown("prefix").length;
+    for (let p = 0; p < prefixCount; p++) {
+      perch(seed, p);
+      for (const name of shown("stem").slice(0, 8)) {
+        const before = perch(seed, p);
+        const item = [...win.document.querySelectorAll("#stem .item")].find((i) => i.textContent === name);
+        if (!item) continue;
+        item.click();
+        moves++;
+        const after = state();
+        expect(`${before.prefix}/${before.kind} -> ${name}: ${after.prefix}/${after.kind}/${after.stem}`)
+          .toBe(`${before.prefix}/${before.kind} -> ${name}: ${before.prefix}/${before.kind}/${name}`);
+      }
+    }
+  }
+  expect(moves).toBeGreaterThan(50);
+});
+
 test("spinning lands on a real verb, every time", () => {
   const names = new Set(verbs.map((v) => v.name));
   const seen = new Set();

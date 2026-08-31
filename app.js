@@ -53,11 +53,14 @@ function hrefFor(code) {
 // that could only ever show one of the two meanings.
 const prefixVerbs = () => verbs.filter((v) => v.stem === state.verb.stem).sort((a, b) => collate(prefixOf(a), prefixOf(b)));
 
-// Every stem that pairs with the current prefix text, alphabetised as before.
-const stemOptions = () => {
-  const text = prefixOf(state.verb);
-  return stems.filter((stem) => verbs.some((v) => v.stem === stem && prefixOf(v) === text));
-};
+// Every stem that pairs with the current prefix, alphabetised as before.
+// Separability counts as part of the prefix: separable über- and inseparable
+// über are two different prefixes that happen to be spelled alike, and they
+// take different stems. Matching on the text alone offered übernehmen while
+// über- was selected, then quietly switched you to the inseparable one.
+const pairs = (verb, stem) =>
+  verbs.some((v) => v.stem === stem && prefixOf(v) === prefixOf(verb) && v.sep === verb.sep);
+const stemOptions = () => stems.filter((stem) => pairs(state.verb, stem));
 
 // ---- the two columns -------------------------------------------------------
 // Browsing, a column is an ordinary scrolling list. Testing, it becomes a slot
@@ -218,17 +221,13 @@ const stemColumn = Column(
   (name) => {
     const stem = stems.find((candidate) => candidate.name === name);
     if (!stem) return;
+    // Every stem on the reel pairs with the current prefix and separability,
+    // so the selected prefix always survives the move. The fallback is only
+    // for a stem reached some other way, never for one that was on screen.
     const text = prefixOf(state.verb);
-    let candidates = verbs.filter((v) => v.stem === stem && prefixOf(v) === text);
-    // The current prefix doesn't pair with this stem; fall back the way the
-    // prefix reel itself would, to the alphabetically first one that does.
-    if (!candidates.length) {
-      candidates = verbs.filter((v) => v.stem === stem).sort((a, b) => collate(prefixOf(a), prefixOf(b)));
-    }
-    // Two verbs can share a prefix and stem (umgehen, übersetzen) — keep
-    // whichever separability was already selected if that sense exists here,
-    // so switching stems doesn't quietly swap which one you're reading.
-    state.verb = candidates.find((v) => v.sep === state.verb.sep) ?? candidates[0];
+    state.verb =
+      verbs.find((v) => v.stem === stem && prefixOf(v) === text && v.sep === state.verb.sep) ??
+      verbs.filter((v) => v.stem === stem).sort((a, b) => collate(prefixOf(a), prefixOf(b)))[0];
     render({ reposition: true });
   },
 );
