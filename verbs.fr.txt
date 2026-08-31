@@ -43,8 +43,8 @@ angehen|concerner quelqu'un ; s'attaquer (à un problème)|« das geht dich ni
 aufgehen|se lever (soleil) ; s'ouvrir ; tomber juste (calcul)|« mir geht ein Licht auf » = ça m'éclaire, je comprends|Les comptes ne tombent pas juste.
 eingehen|conclure (un contrat) ; entrer dans le détail (auf +A) ; mourir (plante)|« darauf gehe ich nicht ein » = je ne vais pas en discuter|Il ne répond pas à ma question.
 übergehen|ignorer, passer sous silence quelqu'un|se dit quand on saute quelqu'un pour une promotion|Il a été passé sous silence pour la promotion.
-umgehen|contourner (une règle)|le mot du monde des impôts et des failles juridiques|Il contourne les règles.
-umgehen|traiter, se comporter (mit +D)|« mit Menschen umgehen können » = savoir s'y prendre avec les gens|Elle sait s'y prendre avec les enfants.
+umgehen|contourner (une règle)|umgéhen, accent sur le radical : le mot du monde des impôts et des failles juridiques|Il contourne les règles.
+umgehen|traiter, se comporter (mit +D)|úmgehen, accent sur la particule : « mit Menschen umgehen können » = savoir s'y prendre avec les gens|Elle sait s'y prendre avec les enfants.
 vergehen|passer (le temps) ; s'estomper|« mir ist der Appetit vergangen » = j'ai perdu l'appétit|Le temps passe vite.
 begehen|commettre (un crime, une erreur) ; célébrer (une date)|presque uniquement dans « einen Fehler begehen » = commettre une erreur, et les faits divers|Il a commis une erreur.
 entgehen|échapper, passer inaperçu ; manquer|« sich etwas entgehen lassen » = laisser passer une occasion|Ça m'a échappé.
@@ -134,7 +134,10 @@ abfahren|partir, démarrer|« der Zug fährt ab » — vocabulaire des horaires|
 anfahren|démarrer ; renverser (avec une voiture) ; rabrouer quelqu'un|« jemanden anfahren » = rabrouer quelqu'un|Elle m'a rabroué sans raison.
 auffahren|percuter la voiture de devant ; sursauter, se dresser|vocabulaire d'assurance : « aufgefahren » = a percuté par l'arrière|Il m'est rentré dedans par l'arrière.
 verfahren|procéder, agir ; se perdre au volant (sich verfahren)|« sich verfahren » = se perdre en voiture, jumeau de « sich verlaufen » pour le piéton|On s'est perdus en voiture.
-überfahren|renverser, écraser ; griller (un feu rouge)|mauvaises nouvelles du vocabulaire routier|Il a grillé un feu rouge.
+überfahren|renverser, écraser ; griller (un feu rouge)|überfáhren, accent sur le radical ; la particule ne se sépare jamais, les deux sens sont un seul verbe|Il a grillé un feu rouge.
+überfahren|faire traverser, passer en bac|ǘberfahren, accent sur la particule ; rare, on dit plutôt übersetzen|Le passeur nous fait traverser.
+umfahren|contourner, éviter (un obstacle)|umfáhren, accent sur le radical : l'inséparable contourne|Je contourne l'obstacle.
+umfahren|renverser, écraser (en roulant dessus)|úmfahren, accent sur la particule : le séparable renverse|Je renverse le panneau.
 durchfahren|rouler sans s'arrêter|« wir fahren durch » = on ne s'arrête pas|On a roulé toute la nuit.
 mitfahren|accompagner en voiture, se faire déposer|« Mitfahrgelegenheit » = covoiturage vient de là|Je peux venir avec toi ?
 losfahren|démarrer, partir|« wann fahren wir los? » — la question avant tout trajet|On part à six heures.

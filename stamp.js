@@ -11,7 +11,7 @@
 // verb, so the verb index is what gives a crawler the whole collection to read.
 import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { parse, prefixOf, forms, collate, translate } from "./data.js";
+import { parse, prefixOf, forms, collate, translate, assignIds } from "./data.js";
 import { locales, ui } from "./strings.js";
 
 const SITE = "https://tja.progapanda.org";
@@ -180,6 +180,9 @@ function appPage(code) {
 function stemsFor(code) {
   const stems = parse(readFileSync("verbs.txt", "utf8")).sort((a, b) => collate(a.name, b.name));
   if (code !== "en") translate(stems, readFileSync(`verbs.${code}.txt`, "utf8"));
+  // Same parse → sort → flatMap sequence app.js runs, so a homograph gets the
+  // same id here as it does in the app the link points at.
+  assignIds(stems.flatMap((stem) => stem.verbs));
   return stems;
 }
 
@@ -223,9 +226,15 @@ function docPage(code) {
           const prefix = prefixOf(verb);
           const { present, past, perfect } = forms(verb);
           const kind = !prefix ? t.base : verb.sep ? t.separable : t.inseparable;
-          const name = (prefix ? `<b>${escape(prefix)}</b>` : "") + escape(verb.stem.name);
+          // Same stressed-half bolding as the card: a separable prefix carries
+          // the stress, an inseparable one never does.
+          const name = !prefix
+            ? escape(verb.stem.name)
+            : verb.sep
+              ? `<b class="sep">${escape(prefix)}</b>${escape(verb.stem.name)}`
+              : `${escape(prefix)}<b class="insep">${escape(verb.stem.name)}</b>`;
           return `      <li>
-        <a class="v" lang="de" href="${appPath(code)}?verb=${encodeURIComponent(verb.name)}">${name}</a>
+        <a class="v" lang="de" href="${appPath(code)}?verb=${encodeURIComponent(verb.id)}">${name}</a>
         <span class="m">${escape(verb.official)}</span>
         <span class="k ${!prefix ? "bare" : verb.sep ? "sep" : "insep"}">${escape(kind)}</span>
         <span class="f" lang="de">er/sie ${escape(present)} · ${escape(past)} · ${escape(perfect)}</span>

@@ -1,6 +1,6 @@
 import { expect, test, beforeAll } from "bun:test";
 import { JSDOM } from "jsdom";
-import { parse, forms, nebensatz, search, translate, collate } from "./data.js";
+import { parse, forms, nebensatz, search, translate, collate, assignIds } from "./data.js";
 
 const raw = await Bun.file("verbs.txt").text();
 const stems = parse(raw);
@@ -23,6 +23,52 @@ test("forms move the prefix the way German does", () => {
   // A separable prefix rejoins its stem when the verb goes last.
   expect(nebensatz(find("annehmen"))).toBe("…, weil sie es annimmt.");
   expect(nebensatz(find("teilnehmen"))).toBe("…, weil sie daran teilnimmt.");
+});
+
+// The clause is generated from the rection, and a verb that governs a
+// preposition has to keep it. Reading the pattern by searching for a token
+// anywhere inside it dropped the preposition ("mit jdm+D" came out as a bare
+// "mir") and picked the wrong object when two slots were listed.
+test("the generated clause keeps the preposition the verb governs", () => {
+  const clause = (name) => nebensatz(find(name));
+
+  // A person keeps the preposition and takes a pronoun.
+  expect(clause("mitkommen")).toBe("…, weil sie mit mir mitkommt."); // mit jdm+D
+  expect(clause("vorbeischauen")).toBe("…, weil sie bei mir vorbeischaut."); // bei jdm+D
+  expect(clause("zukommen")).toBe("…, weil sie auf mich zukommt."); // auf jdn+A
+  expect(clause("einspringen")).toBe("…, weil sie für mich einspringt."); // für jdn+A
+
+  // A thing takes the da- compound, because German has no "mit es".
+  expect(clause("auskommen")).toBe("…, weil sie damit auskommt."); // mit etw/jdm+D
+  expect(clause("nachdenken")).toBe("…, weil sie darüber nachdenkt."); // über etw+A
+  expect(clause("verstoßen")).toBe("…, weil sie dagegen verstößt."); // gegen etw+A
+  expect(clause("abhängen")).toBe("…, weil sie davon abhängt."); // von jdm/etw+D
+
+  // The first slot in the pattern is the object, not the first one that
+  // happens to match: besprechen is "etw+A mit jdm+D", so it is "es".
+  expect(clause("besprechen")).toBe("…, weil sie es bespricht.");
+  expect(clause("weitergeben")).toBe("…, weil sie es weitergibt."); // etw+A an jdn+A
+
+  // A dative person plus an accusative thing takes both.
+  expect(clause("geben")).toBe("…, weil sie mir das gibt."); // jdm etw+A
+  expect(clause("vornehmen")).toBe("…, weil sie sich das vornimmt."); // sich+D etw+A
+
+  // Nothing to stand in for leaves the clause bare rather than inventing one.
+  expect(clause("zunehmen")).toBe("…, weil sie zunimmt."); // kein Obj.
+  expect(clause("gedenken")).toBe("…, weil sie gedenkt."); // genitive
+
+  // Every verb produces a clause, and none leaks the rection notation into it.
+  for (const verb of verbs) {
+    expect(`${verb.name}: ${nebensatz(verb)}`).not.toMatch(/jdm|jdn|jds|etw|\+[ADG]|·/);
+  }
+});
+
+// The two umfahren senses are written identically in a Nebensatz and differ
+// only in stress. That is the one place the pair collapses, and it should.
+test("the umfahren pair reads alike in a Nebensatz", () => {
+  const both = verbs.filter((v) => v.name === "umfahren");
+  expect(both.length).toBe(2);
+  expect(nebensatz(both[0])).toBe(nebensatz(both[1]));
 });
 
 // The reader searches in whatever language the card is in, so the meaning text
@@ -103,6 +149,31 @@ test("the French layer covers the data and keeps the homographs apart", async ()
   expect(ferry.official).toContain("traverser");
 });
 
+// The id is what a URL and a lookup actually address a verb by. Only a name
+// that collides should ever need one beyond its own spelling.
+test("assignIds only touches names that actually collide", () => {
+  const withIds = assignIds(parse(raw).flatMap((s) => s.verbs));
+  const count = new Map();
+  for (const v of withIds) count.set(v.name, (count.get(v.name) ?? 0) + 1);
+  const colliding = new Set([...count].filter(([, n]) => n > 1).map(([name]) => name));
+
+  // The pairs German actually has: one spelling, both separabilities, two
+  // meanings. A name landing here by accident is a data entry mistake.
+  expect([...colliding].sort()).toEqual(["umfahren", "umgehen", "überfahren", "übersetzen"].sort());
+
+  const solo = withIds.filter((v) => !colliding.has(v.name));
+  expect(solo.every((v) => v.id === v.name)).toBe(true);
+
+  for (const name of colliding) {
+    const pair = withIds.filter((v) => v.name === name);
+    expect(pair.map((v) => v.id)).toEqual([name, `${name}-2`]);
+    // One of each separability. Two rows of the same kind would be a duplicate,
+    // not a homograph.
+    expect(new Set(pair.map((v) => v.sep)).size).toBe(2);
+  }
+  expect(new Set(withIds.map((v) => v.id)).size).toBe(withIds.length); // every id unique
+});
+
 // A German class says Präteritum, not "past" — the terms name German
 // categories and translating them teaches the wrong word.
 test("the grammar terms stay German in every locale", async () => {
@@ -166,6 +237,85 @@ test("picking on one reel drags the other to something that pairs", () => {
     item.click();
     expect(names.has(word())).toBe(true);
   }
+});
+
+// umgehen is spelled one way and is two different verbs: separable "to deal
+// with", inseparable "to circumvent". Selecting prefix+stem used to resolve
+// by name alone, which could only ever return one of them — this is the
+// reachability bug that fix is pinned against.
+test("both umgehen verbs are reachable, and stay distinct", () => {
+  const query = win.document.querySelector("#q");
+  query.value = "umgehen";
+  query.dispatchEvent(new win.Event("input", { bubbles: true }));
+  const hits = [...win.document.querySelectorAll("#hits li")];
+  expect(hits.length).toBe(2);
+  hits[0].click();
+  expect(word()).toBe("umgehen");
+
+  // The prefix reel shows "um" twice for this stem — one row per sense,
+  // coloured the same red (trennbar) / blue (untrennbar) as the badge.
+  const umItems = [...win.document.querySelectorAll("#prefix .item")].filter((i) => i.textContent === "um");
+  expect(umItems.length).toBe(2);
+  expect(umItems.some((i) => i.classList.contains("sep"))).toBe(true);
+  expect(umItems.some((i) => i.classList.contains("insep"))).toBe(true);
+
+  const gloss = () => win.document.querySelector(".gloss").textContent;
+  umItems[0].click();
+  const glossA = gloss();
+  expect(word()).toBe("umgehen"); // still the same word
+  umItems[1].click();
+  const glossB = gloss();
+  expect(word()).toBe("umgehen");
+  expect(new Set([glossA, glossB])).toEqual(
+    new Set(["to circumvent, to get around (a rule)", "to deal with, to handle (mit +D)"]),
+  );
+
+  query.value = "";
+  query.dispatchEvent(new win.Event("input", { bubbles: true }));
+});
+
+// The locale picker carries the current verb in a URL param — it has to name
+// which of the two übersetzen senses is on screen, not just the spelling.
+test("the locale link's verb id tells the two übersetzen senses apart", () => {
+  const query = win.document.querySelector("#q");
+  const verbParam = () => new URL(win.document.querySelector('#locale a[data-code="ru"]').href).searchParams.get("verb");
+
+  query.value = "übersetzen";
+  query.dispatchEvent(new win.Event("input", { bubbles: true }));
+  [...win.document.querySelectorAll("#hits li")][0].click();
+  const idA = verbParam();
+
+  query.value = "übersetzen";
+  query.dispatchEvent(new win.Event("input", { bubbles: true }));
+  [...win.document.querySelectorAll("#hits li")][1].click();
+  const idB = verbParam();
+
+  expect(idA).not.toBe(idB);
+  expect(new Set([idA, idB])).toEqual(new Set(["übersetzen", "übersetzen-2"]));
+
+  query.value = "";
+  query.dispatchEvent(new win.Event("input", { bubbles: true }));
+});
+
+// Stress marks the grammar: a separable prefix carries it, an inseparable one
+// never does. Bolding the stressed half is how the card shows that.
+test("the stressed half of the word is bolded, matching separability", () => {
+  const query = win.document.querySelector("#q");
+
+  query.value = "annehmen"; // separable: stress on the prefix
+  query.dispatchEvent(new win.Event("input", { bubbles: true }));
+  [...win.document.querySelectorAll("#hits li")][0].click();
+  expect(win.document.querySelector(".word b.sep")?.textContent).toBe("an");
+  expect(win.document.querySelector(".word b.insep")).toBeNull();
+
+  query.value = "übernehmen"; // inseparable: stress stays on the stem
+  query.dispatchEvent(new win.Event("input", { bubbles: true }));
+  [...win.document.querySelectorAll("#hits li")][0].click();
+  expect(win.document.querySelector(".word b.insep")?.textContent).toBe("nehmen");
+  expect(win.document.querySelector(".word b.sep")).toBeNull();
+
+  query.value = "";
+  query.dispatchEvent(new win.Event("input", { bubbles: true }));
 });
 
 test("spinning lands on a real verb, every time", () => {

@@ -1,4 +1,4 @@
-import { parse, prefixOf, forms, nebensatz, search, collate, translate } from "./data.js";
+import { parse, prefixOf, forms, nebensatz, search, collate, translate, assignIds } from "./data.js";
 import { localeFromPath, locales, ui } from "./strings.js";
 
 // index.html kicks this off while it is still parsing; falling back keeps the
@@ -9,53 +9,55 @@ const t = ui[locale];
 const raw = await (globalThis.verbsText ?? fetch("/verbs.txt").then((r) => r.text()));
 const stems = parse(raw).sort((a, b) => collate(a.name, b.name));
 if (globalThis.verbsOverlay) translate(stems, await globalThis.verbsOverlay);
-const verbs = stems.flatMap((stem) => stem.verbs);
-const byName = new Map(verbs.map((verb) => [verb.name, verb]));
-const prefixes = [...new Set(verbs.map(prefixOf))].sort(collate);
-
-// Is prefix + stem an actual German word?
-function isWord(prefix, stem) {
-  return byName.has(prefix + stem.name);
-}
+const verbs = assignIds(stems.flatMap((stem) => stem.verbs));
+const byId = new Map(verbs.map((verb) => [verb.id, verb]));
 
 const find = (selector) => document.querySelector(selector);
-const firstVerb = byName.get("annehmen") ?? verbs[0];
+const firstVerb = byId.get("annehmen") ?? verbs[0];
 
+// state.verb is the one source of truth: the prefix and stem reels are just
+// views into it. Reading it back out of prefix+stem name, the way this used
+// to work, breaks the moment two verbs share a spelling — umgehen and
+// übersetzen each are two different verbs, distinguished only by whether the
+// prefix separates, and a name-keyed lookup can only ever return one of them.
 const state = {
-  prefix: prefixOf(firstVerb),
-  stem: firstVerb.stem,
+  verb: firstVerb,
   testing: false, // flashcards: the one-armed bandit, one card at a time
   revealed: true, // in test mode, whether the meaning is on show yet
 };
 
-const selectedVerb = () => byName.get(state.prefix + state.stem.name);
+const selectedVerb = () => state.verb;
 
 // The locale picker hands the current card over in the URL, so switching
 // language keeps you on the word you were reading rather than dropping you
 // back at the start. An unknown or missing verb just falls through.
 const params = new URLSearchParams(globalThis.location?.search ?? "");
-const asked = byName.get(params.get("verb") ?? "");
-if (asked) {
-  state.prefix = prefixOf(asked);
-  state.stem = asked.stem;
-}
+const asked = byId.get(params.get("verb") ?? "");
+if (asked) state.verb = asked;
 if (params.get("mode") === "cards") {
   state.testing = true;
   state.revealed = true;
 }
 
 function hrefFor(code) {
-  const query = new URLSearchParams({ verb: selectedVerb().name });
+  const query = new URLSearchParams({ verb: selectedVerb().id });
   // Always turned over: switching language mid-guess is how you ask what the
   // word means in the other language, not a request to keep guessing.
   if (state.testing) query.set("mode", "cards");
   return `${code === "en" ? "/" : `/${code}/`}?${query}`;
 }
 
-// Each column shows only what pairs with the other column's selection, so
-// every combination you can land on is a real word.
-const prefixOptions = () => prefixes.filter((prefix) => isWord(prefix, state.stem));
-const stemOptions = () => stems.filter((stem) => isWord(state.prefix, stem));
+// Every verb sharing the current stem, alphabetised by prefix. Usually one row
+// per prefix; where a prefix attaches to this stem two ways (umgehen,
+// übersetzen), both keep their own row rather than being collapsed into one
+// that could only ever show one of the two meanings.
+const prefixVerbs = () => verbs.filter((v) => v.stem === state.verb.stem).sort((a, b) => collate(prefixOf(a), prefixOf(b)));
+
+// Every stem that pairs with the current prefix text, alphabetised as before.
+const stemOptions = () => {
+  const text = prefixOf(state.verb);
+  return stems.filter((stem) => verbs.some((v) => v.stem === stem && prefixOf(v) === text));
+};
 
 // ---- the two columns -------------------------------------------------------
 // Browsing, a column is an ordinary scrolling list. Testing, it becomes a slot
@@ -64,7 +66,7 @@ const stemOptions = () => stems.filter((stem) => isWord(state.prefix, stem));
 // cheap — put the strip at its final resting place, then animate it in from a
 // copy or three above, and the eye sees a spin.
 
-function Column(element, labelOf, onPick) {
+function Column(element, labelOf, onPick, classOf) {
   const strip = element.querySelector(".strip");
   let keys = []; // one key per option, in display order
   let selectedIndex = () => 0;
@@ -92,15 +94,21 @@ function Column(element, labelOf, onPick) {
     // A leftover reel position would throw off where the browsing list scrolls to.
     if (!state.testing) strip.style.transform = "";
 
+    // join(" ") used to be enough to tell two key lists apart, back when a key
+    // was always a string. The prefix column's keys are verb objects now, and
+    // every object stringifies to the same "[object Object]" — the join was
+    // silently blind to any change that kept the same list length, so a stale
+    // row would keep its old text under freshly reassigned classes.
+    const changed = keys.length !== nextKeys.length || nextKeys.some((key, i) => key !== keys[i]);
     const copies = state.testing ? 3 : 1;
-    if (copies !== copiesDrawn || nextKeys.join(" ") !== keys.join(" ")) {
+    if (copies !== copiesDrawn || changed) {
       copiesDrawn = copies;
       keys = nextKeys;
       const items = [];
       for (let copy = 0; copy < copies; copy++) {
         options.forEach((option, i) => {
           const item = document.createElement("div");
-          item.className = "item";
+          item.className = classOf ? `item ${classOf(option)}` : "item";
           item.textContent = labelOf(option);
           item.id = `${element.id}-${copy}-${i}`;
           item.setAttribute("role", "option");
@@ -191,17 +199,17 @@ function Column(element, labelOf, onPick) {
   return { draw, moveTo, step, watchIndex: (fn) => (selectedIndex = fn) };
 }
 
-// Picking something the other column cannot pair with moves that column too,
-// rather than leaving a combination that is not a word.
+// Every row here is already a real verb sharing the current stem, so picking
+// one is always valid — no fallback needed, unlike the stem column below.
 const prefixColumn = Column(
   find("#prefix"),
-  (prefix) => prefix || "—",
-  (prefix) => {
-    if (prefix === undefined) return;
-    state.prefix = prefix;
-    if (!isWord(prefix, state.stem)) state.stem = stems.find((stem) => isWord(prefix, stem));
+  (verb) => prefixOf(verb) || "—",
+  (verb) => {
+    if (verb === undefined) return;
+    state.verb = verb;
     render({ reposition: true });
   },
+  (verb) => (!prefixOf(verb) ? "bare" : verb.sep ? "sep" : "insep"),
 );
 
 const stemColumn = Column(
@@ -210,16 +218,23 @@ const stemColumn = Column(
   (name) => {
     const stem = stems.find((candidate) => candidate.name === name);
     if (!stem) return;
-    state.stem = stem;
-    if (!isWord(state.prefix, stem)) {
-      state.prefix = prefixes.find((prefix) => isWord(prefix, stem));
+    const text = prefixOf(state.verb);
+    let candidates = verbs.filter((v) => v.stem === stem && prefixOf(v) === text);
+    // The current prefix doesn't pair with this stem; fall back the way the
+    // prefix reel itself would, to the alphabetically first one that does.
+    if (!candidates.length) {
+      candidates = verbs.filter((v) => v.stem === stem).sort((a, b) => collate(prefixOf(a), prefixOf(b)));
     }
+    // Two verbs can share a prefix and stem (umgehen, übersetzen) — keep
+    // whichever separability was already selected if that sense exists here,
+    // so switching stems doesn't quietly swap which one you're reading.
+    state.verb = candidates.find((v) => v.sep === state.verb.sep) ?? candidates[0];
     render({ reposition: true });
   },
 );
 
-prefixColumn.watchIndex(() => Math.max(0, prefixOptions().indexOf(state.prefix)));
-stemColumn.watchIndex(() => Math.max(0, stemOptions().indexOf(state.stem)));
+prefixColumn.watchIndex(() => Math.max(0, prefixVerbs().indexOf(state.verb)));
+stemColumn.watchIndex(() => Math.max(0, stemOptions().indexOf(state.verb.stem)));
 
 // ---- the card --------------------------------------------------------------
 const escape = (text) => text.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
@@ -229,10 +244,18 @@ function cardHTML(verb) {
   const prefix = prefixOf(verb);
   const kind = !prefix ? t.base : verb.sep ? t.separable : t.inseparable;
   const reveal = `<button class="primary reveal" type="button">${t.reveal} <kbd>space / enter</kbd></button>`;
+  // A separable prefix carries the stress ("ANnehmen"); an inseparable one
+  // never does ("überSETZen") — bolding whichever half is actually stressed
+  // shows the rule on every card instead of stating it once in a footnote.
+  const word = !prefix
+    ? escape(verb.stem.name)
+    : verb.sep
+      ? `<b class="sep">${escape(prefix)}</b>${escape(verb.stem.name)}`
+      : `${escape(prefix)}<b class="insep">${escape(verb.stem.name)}</b>`;
 
   return `
     <p class="prompt">${t.prompt}</p>
-    <h2 class="word">${prefix ? `<b>${escape(prefix)}</b>` : ""}${escape(verb.stem.name)}</h2>
+    <h2 class="word">${word}</h2>
     <div class="answer">
       <p class="gloss">${escape(verb.official)}</p>
       <ul class="badges">
@@ -260,15 +283,15 @@ function render({ reposition = false, turns = 0 } = {}) {
   document.body.classList.toggle("testing", state.testing);
   document.body.classList.toggle("revealed", state.revealed);
 
-  const prefixList = prefixOptions();
+  const prefixList = prefixVerbs();
   const stemList = stemOptions();
 
-  prefixColumn.draw(prefixList, prefixList, prefixList.indexOf(state.prefix));
-  stemColumn.draw(stemList, stemList.map((stem) => stem.name), stemList.indexOf(state.stem));
+  prefixColumn.draw(prefixList, prefixList, prefixList.indexOf(state.verb));
+  stemColumn.draw(stemList, stemList.map((stem) => stem.name), stemList.indexOf(state.verb.stem));
 
   if (reposition) {
-    prefixColumn.moveTo(prefixList.indexOf(state.prefix), turns, 850);
-    stemColumn.moveTo(stemList.indexOf(state.stem), turns, 1150);
+    prefixColumn.moveTo(prefixList.indexOf(state.verb), turns, 850);
+    stemColumn.moveTo(stemList.indexOf(state.verb.stem), turns, 1150);
   }
 
   find("#spin").firstChild.textContent = (state.testing ? t.nextCard : t.randomVerb) + " ";
@@ -295,9 +318,7 @@ function revealOrNext() {
 }
 
 function nextCard() {
-  const verb = verbs[Math.floor(Math.random() * verbs.length)];
-  state.prefix = prefixOf(verb);
-  state.stem = verb.stem;
+  state.verb = verbs[Math.floor(Math.random() * verbs.length)];
   state.revealed = !state.testing;
   render({ reposition: true, turns: 3 });
 }
@@ -309,8 +330,7 @@ const results = find("#hits");
 
 function show(verb) {
   if (!verb) return;
-  state.prefix = prefixOf(verb);
-  state.stem = verb.stem;
+  state.verb = verb;
   state.revealed = true;
   query.value = "";
   closeResults();

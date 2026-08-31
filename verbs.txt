@@ -40,8 +40,8 @@ angehen|t|to concern someone; to tackle (a problem)|"das geht dich nichts an" = 
 aufgehen|t|to rise (sun); to open; to work out (a calculation)|"mir geht ein Licht auf" = it dawns on me|Die Rechnung geht nicht auf.|kein Obj. · jdm+D (klar werden)|The sums don't add up.
 eingehen|t|to enter into (a contract); to go into detail (auf +A); to die (plant)|"darauf gehe ich nicht ein" = I won't get into that|Er geht auf meine Frage nicht ein.|auf etw+A · etw+A (Vertrag)|He doesn't address my question.
 übergehen|f|to skip, to pass over, to ignore someone|used about being passed over for a promotion|Man hat ihn bei der Beförderung übergangen.|jdn+A (übergehen)|He was passed over for the promotion.|hat
-umgehen|f|to circumvent, to get around (a rule)|the tax-and-loopholes word|Er umgeht die Vorschriften.|etw+A (Regel)|He gets around the rules.|hat
-umgehen|t|to deal with, to handle (mit +D)|"mit Menschen umgehen können" = to be good with people|Sie kann gut mit Kindern umgehen.|mit jdm/etw+D|She is good with children.
+umgehen|f|to circumvent, to get around (a rule)|umgéhen, stress on the stem: the tax-and-loopholes word|Er umgeht die Vorschriften.|etw+A (Regel)|He gets around the rules.|hat
+umgehen|t|to deal with, to handle (mit +D)|úmgehen, stress on the prefix: "mit Menschen umgehen können" = to be good with people|Sie kann gut mit Kindern umgehen.|mit jdm/etw+D|She is good with children.
 vergehen|f|to pass (of time); to fade|"mir ist der Appetit vergangen" = I lost my appetite|Die Zeit vergeht schnell.|kein Obj. · jdm+D (Appetit)|Time passes quickly.
 begehen|f|to commit (a crime, a mistake); to mark (an occasion)|almost only in "einen Fehler begehen" = to make a mistake, and in crime reports|Er hat einen Fehler begangen.|etw+A (Fehler, Tat)|He has made a mistake.|hat
 entgehen|f|to escape, to elude; to miss out on|"sich etwas entgehen lassen" = to let an opportunity slip|Das ist mir entgangen.|jdm+D · etw+D|That escaped my notice.
@@ -131,7 +131,10 @@ abfahren|t|to depart, to leave; to drive off|"der Zug fährt ab" – timetable v
 anfahren|t|to pull away; to hit someone with a vehicle; to snap at someone|"jemanden anfahren" = to bark at someone|Sie hat mich unnötig angefahren.|jdn+A · kein Obj.|She snapped at me for no reason.|hat
 auffahren|t|to drive into the car ahead; to sit up with a start|the insurance word: "aufgefahren" = drove into the car in front|Er ist auf mein Auto aufgefahren.|auf etw+A|He drove into the back of my car.
 verfahren|f|to proceed, to act (in a certain way); to get lost driving (sich verfahren)|"sich verfahren" = to get lost driving, the twin of "sich verlaufen" on foot|Wir haben uns verfahren.|kein Obj. (vorgehen) · sich+A|We got lost driving.|hat
-überfahren|f|to run over; to jump (a red light)|drivers' bad news vocabulary|Er hat die rote Ampel überfahren.|jdn/etw+A|He jumped the red light.|hat
+überfahren|f|to run over; to jump (a red light)|überfáhren, stress on the stem; the prefix never separates, so both senses are one verb|Er hat die rote Ampel überfahren.|jdn/etw+A|He jumped the red light.|hat
+überfahren|t|to ferry across, to take across (by boat)|ǘberfahren, stress on the prefix; rare, übersetzen is the usual word|Der Fährmann fährt uns über.|jdn/etw+A|The ferryman takes us across.|hat
+umfahren|f|to drive around, to go around (an obstacle)|umfáhren, stress on the stem: the inseparable one avoids the thing|Ich umfahre das Hindernis.|jdn/etw+A|I drive around the obstacle.|hat
+umfahren|t|to knock down, to run over (by driving into it)|úmfahren, stress on the prefix: the separable one flattens the thing|Ich fahre das Schild um.|jdn/etw+A|I knock the sign down.|hat
 durchfahren|t|to drive through without stopping|"wir fahren durch" = we're not stopping|Wir sind die Nacht durchgefahren.|kein Obj. · etw+A|We drove through the night.
 mitfahren|t|to ride along, to get a lift|"Mitfahrgelegenheit" – the ride-share noun comes from this|Kann ich bei dir mitfahren?|mit jdm+D · bei jdm+D|Can I ride with you?
 losfahren|t|to set off, to get going|"wann fahren wir los?" – the trip-starting question|Wir fahren um sechs los.|kein Obj.|We're setting off at six.
@@ -689,7 +692,7 @@ raten|f|to advise (+D); to guess|"rate mal!" = take a guess|Ich rate dir zu wart
 beraten|f|to advise, to consult|professional advice: "sich beraten lassen" = to get advice|Wir beraten Sie gern.|jdn+A bei etw+D · sich+A|We're happy to advise you.
 verraten|f|to betray; to give away, to reveal|"verrat mir dein Geheimnis" = tell me your secret|Verrate nichts vom Ende!|jdm etw+A · jdn+A|Don't give away the ending!
 erraten|f|to guess correctly|"du hast es erraten!" = you guessed it!|Du hast es erraten.|etw+A|You guessed right.
-abraten|f|to advise against (von +D)|"davon rate ich ab" – professional caution|Ich rate dir davon ab.|jdm+D von etw+D|I'd advise you against it.
+abraten|t|to advise against (von +D)|"davon rate ich ab" – professional caution|Ich rate dir davon ab.|jdm+D von etw+D|I'd advise you against it.
 geraten|f|to end up somewhere; to turn out; to get into (a state)|"in Schwierigkeiten geraten" = to get into trouble|Der Kuchen ist gut geraten.|in etw+A · an jdn+A · kein Obj. (gelingen)|The cake turned out well.|ist
 
 =spielen|to play|spielt|spielte|gespielt|hat

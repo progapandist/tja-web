@@ -24,6 +24,23 @@ export function parse(raw) {
 
 export const prefixOf = (v) => v.name.slice(0, v.name.length - v.stem.name.length);
 
+// A verb's spelling is not always a unique key: German has real homographs
+// where the same prefix attaches to the same stem two ways with two meanings
+// (umgehen: to circumvent vs. to deal with; übersetzen: to translate vs. to
+// ferry across) — same letters, different separability, different stress.
+// Anything that addresses a specific verb (a URL, a lookup by name) needs an
+// id that tells those two apart. The first of a colliding pair keeps its bare
+// name, so an ordinary link still works; only the second one gets a suffix.
+export function assignIds(verbs) {
+  const seen = new Map();
+  for (const v of verbs) {
+    const n = (seen.get(v.name) ?? 0) + 1;
+    seen.set(v.name, n);
+    v.id = n === 1 ? v.name : `${v.name}-${n}`;
+  }
+  return verbs;
+}
+
 // The three places where the root actually changes. Separable prefixes hop to
 // the end of the clause and ge- lands between prefix and root.
 export function forms(v) {
@@ -35,16 +52,44 @@ export function forms(v) {
 
 const DA = { an: "daran", auf: "darauf", mit: "damit", von: "davon", zu: "dazu", über: "darüber",
   für: "dafür", bei: "dabei", in: "darin", nach: "danach", gegen: "dagegen", aus: "daraus",
-  um: "darum", vor: "davor" };
+  um: "darum", vor: "davor", durch: "dadurch", unter: "darunter" };
 
-// A stand-in object from the rection, so the generated clause is sayable.
+// A stand-in object built from the rection, so the generated clause is sayable.
 // Only the first alternative counts: it is the main pattern.
+//
+// The pattern is read left to right rather than searched for a token anywhere
+// inside it. Searching found "jdm" in the middle of "mit jdm+D" and returned a
+// bare "mir", dropping the preposition the verb actually governs, and it found
+// "jdm" before "etw+A" in "etw+A mit jdm+D" and picked the wrong object.
 function object(v) {
-  const u = v.use.split("·")[0].trim();
-  for (const [needle, out] of [["sich+A", "sich "], ["sich+D", "sich das "], ["jdm etw+A", "mir das "],
-    ["jdm", "mir "], ["jdn", "mich "], ["etw+A", "es "]]) if (u.includes(needle)) return out;
-  const da = DA[u.split(" ")[0]];
-  return da ? da + " " : "";
+  const pattern = v.use.split("·")[0].replace(/\([^)]*\)/g, "").trim();
+  if (!pattern || pattern.startsWith("kein Obj")) return "";
+
+  const tokens = pattern.split(/\s+/);
+  let prep = null;
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i];
+    if (!/jdm|jdn|jds|etw|sich/.test(token)) {
+      // A preposition, sometimes written as alternatives ("an/bei"): keep the
+      // first the da- table knows, since that is the form the clause will use.
+      prep = token.replace(/\+[ADG]$/, "").split("/").find((p) => DA[p]) ?? prep;
+      continue;
+    }
+    if (/\+G$/.test(token)) return ""; // a genitive stand-in reads worse than none
+    // jdm is already dative; everything else says which case it wants.
+    const dative = /\+D$/.test(token) || (/jdm/.test(token) && !/\+[AG]$/.test(token));
+    const person = /jdm|jdn/.test(token);
+    // A dative person or reflexive followed by an accusative thing takes both.
+    const also = /etw\+A/.test(tokens[i + 1] ?? "") ? "das " : "";
+
+    if (/sich/.test(token)) return prep ? `${prep} sich ` : `sich ${also}`.trimEnd() + " ";
+    // The preposition governs its object, so it comes along. For a thing German
+    // will not take "mit es", so the da- compound stands in instead.
+    if (prep) return person && !/etw/.test(token) ? `${prep} ${dative ? "mir" : "mich"} ` : `${DA[prep]} `;
+    if (person) return `${dative ? "mir" : "mich"} ${also}`.trimEnd() + " ";
+    return dative ? "dem " : "es ";
+  }
+  return "";
 }
 
 // The one thing a main clause hides: in a subordinate clause the verb goes last

@@ -287,5 +287,8 @@ test("the verb index carries every verb and every stem", async () => {
     }
     const links = [...html.matchAll(/\?verb=([^"]+)"/g)].map((m) => decodeURIComponent(m[1]));
     expect(`${code}: ${links.length} links`).toBe(`${code}: ${verbs.length} links`);
+    // umgehen and übersetzen each cover two different verbs (separable and
+    // inseparable, different meanings) — every link has to reach its own.
+    expect(`${code}: ${new Set(links).size} distinct`).toBe(`${code}: ${verbs.length} distinct`);
   }
 });
