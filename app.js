@@ -53,14 +53,18 @@ function hrefFor(code) {
 // that could only ever show one of the two meanings.
 const prefixVerbs = () => verbs.filter((v) => v.stem === state.verb.stem).sort((a, b) => collate(prefixOf(a), prefixOf(b)));
 
-// Every stem that pairs with the current prefix, alphabetised as before.
 // Separability counts as part of the prefix: separable über- and inseparable
 // über are two different prefixes that happen to be spelled alike, and they
 // take different stems. Matching on the text alone offered übernehmen while
 // über- was selected, then quietly switched you to the inseparable one.
 const pairs = (verb, stem) =>
   verbs.some((v) => v.stem === stem && prefixOf(v) === prefixOf(verb) && v.sep === verb.sep);
-const stemOptions = () => stems.filter((stem) => pairs(state.verb, stem));
+
+// The stem reel is the whole list, every time. Hiding the ones that do not
+// pair made it a single row for a prefix like teil-, which reads as a bug
+// rather than as a fact about the language. They are greyed instead, so the
+// column keeps its shape and you can still see what else there is.
+const stemOptions = () => stems;
 
 // ---- the two columns -------------------------------------------------------
 // Browsing, a column is an ordinary scrolling list. Testing, it becomes a slot
@@ -124,6 +128,10 @@ function Column(element, labelOf, onPick, classOf) {
 
     [...strip.children].forEach((item, i) => {
       const isSelected = i % keys.length === selected;
+      // The stem reel is the same list every time, so its rows are never
+      // rebuilt and their classes have to be refreshed here instead. Left to
+      // the branch above, a greyed row stayed grey after the prefix moved.
+      if (classOf) item.className = `item ${classOf(options[i % keys.length])}`;
       item.classList.toggle("on", isSelected);
       item.setAttribute("aria-selected", isSelected);
       if (!isSelected) return;
@@ -221,15 +229,16 @@ const stemColumn = Column(
   (name) => {
     const stem = stems.find((candidate) => candidate.name === name);
     if (!stem) return;
-    // Every stem on the reel pairs with the current prefix and separability,
-    // so the selected prefix always survives the move. The fallback is only
-    // for a stem reached some other way, never for one that was on screen.
+    // A lit stem keeps the prefix you had. A greyed one cannot, so it takes
+    // the first prefix that does build a word with it — which is what the
+    // grey says will happen.
     const text = prefixOf(state.verb);
     state.verb =
       verbs.find((v) => v.stem === stem && prefixOf(v) === text && v.sep === state.verb.sep) ??
       verbs.filter((v) => v.stem === stem).sort((a, b) => collate(prefixOf(a), prefixOf(b)))[0];
     render({ reposition: true });
   },
+  (stem) => (pairs(state.verb, stem) ? "" : "off"),
 );
 
 prefixColumn.watchIndex(() => Math.max(0, prefixVerbs().indexOf(state.verb)));

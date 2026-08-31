@@ -336,11 +336,16 @@ main {
 #prefix .item.sep { color: var(--red); }
 #prefix .item.insep { color: var(--blue); }
 
+/* A stem that does not build a word with the prefix showing. It stays on the
+   reel so the column keeps its shape; picking it moves the prefix instead. */
+#stem .item.off { color: var(--dim); }
+
 /* The selection is a block of colour, not a highlight. Source order alone
    does not settle this: #prefix .item.sep/.insep above carry an id, so a
    plain .item.on loses the specificity fight and the text stayed the same
    colour as the block it sat on. Scoping this one too, at the same weight,
-   is what actually wins it. */
+   is what actually wins it. The .off rule above is the same weight again, so
+   it has to come first for a selected row to keep its own colour. */
 .item.on { font-weight: 500; }
 .item.on:hover { filter: brightness(1.08); }
 #prefix .item.on,

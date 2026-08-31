@@ -222,7 +222,17 @@ test("the reels only offer combinations that are real words", () => {
   const prefix = at("prefix") === "—" ? "" : at("prefix");
   const stem = at("stem");
   for (const p of shown("prefix")) expect(names.has((p === "—" ? "" : p) + stem)).toBe(true);
-  for (const s of shown("stem")) expect(names.has(prefix + s)).toBe(true);
+
+  // The stem reel carries the whole list now, so what has to be a real word is
+  // the lit rows. Separability counts: "übernehmen" exists, but not with the
+  // separable über- that might be showing, so that row is greyed.
+  const sep = win.document.querySelector(".badges li").textContent === "trennbar";
+  const isWord = (name) => verbs.some((v) => v.name === prefix + name && v.stem.name === name && v.sep === sep);
+  const rows = [...win.document.querySelectorAll("#stem .item")].slice(0, shown("stem").length);
+  for (const item of rows) {
+    const lit = !item.classList.contains("off");
+    expect(`${prefix}${item.textContent}: lit=${lit}`).toBe(`${prefix}${item.textContent}: lit=${isWord(item.textContent)}`);
+  }
 });
 
 test("picking on one reel drags the other to something that pairs", () => {
@@ -320,12 +330,12 @@ test("the stressed half of the word is bolded, matching separability", () => {
 
 // Separability is part of the prefix: separable über- and inseparable über are
 // two different prefixes spelled alike, and they take different stems. The
-// stem reel matched on the text alone, so it offered übernehmen while über-
-// was selected and then quietly switched you to the inseparable one.
-test("the stem reel only offers stems that take the selected prefix", () => {
-  const onPrefix = () => win.document.querySelector("#prefix .item.on");
+// stem reel lists every stem either way, but only the ones that build a word
+// with the prefix showing are lit.
+test("the stem reel lights only the stems that take the selected prefix", () => {
   const badge = () => win.document.querySelector(".badges li").textContent;
-  const stemLabels = () => shown("stem");
+  const lit = () => [...win.document.querySelectorAll("#stem .item")]
+    .filter((i) => !i.classList.contains("off")).map((i) => i.textContent);
 
   const setzen = [...win.document.querySelectorAll("#stem .item")].find((i) => i.textContent === "setzen");
   setzen.click();
@@ -337,54 +347,70 @@ test("the stem reel only offers stems that take the selected prefix", () => {
 
   sep.click();
   expect(badge()).toBe("trennbar");
-  const withSep = stemLabels();
+  const withSep = lit();
   expect(withSep).not.toContain("nehmen"); // übernehmen is inseparable only
+  expect(withSep).toContain("setzen");
 
   insep.click();
   expect(badge()).toBe("untrennbar");
-  const withInsep = stemLabels();
+  const withInsep = lit();
   expect(withInsep).toContain("nehmen");
   expect(withInsep.length).toBeGreaterThan(withSep.length);
+
+  // The column itself never shrinks: every stem stays on the reel.
+  expect(shown("stem").length).toBe(stems.length);
 });
 
-// Whatever the reel shows, picking it has to land there. A stem that could not
-// keep the selected prefix used to drag the selection somewhere else.
-test("picking a stem keeps the prefix and its separability", () => {
+// A lit stem keeps the prefix you had. A greyed one cannot build a word with
+// it, so it moves the prefix — which is what the grey is there to say.
+test("picking a lit stem keeps the prefix, a greyed one moves it", () => {
   const state = () => ({
     prefix: win.document.querySelector("#prefix .item.on").textContent,
     kind: win.document.querySelector(".badges li").textContent,
     stem: win.document.querySelector("#stem .item.on").textContent,
   });
-
-  // Picking a stem changes which prefixes exist, so the reel has to be put
-  // back before each attempt or the row index means something else.
   const perch = (seed, p) => {
     [...win.document.querySelectorAll("#stem .item")].find((i) => i.textContent === seed).click();
     const rows = [...win.document.querySelectorAll("#prefix .item")];
     rows[Math.min(p, rows.length - 1)].click();
     return state();
   };
+  const isLit = (name) => {
+    const item = [...win.document.querySelectorAll("#stem .item")].find((i) => i.textContent === name);
+    return item && !item.classList.contains("off");
+  };
 
-  let moves = 0;
-  for (const seed of ["setzen", "fahren", "gehen", "nehmen"]) {
-    if (![...win.document.querySelectorAll("#stem .item")].some((i) => i.textContent === seed)) continue;
+  let kept = 0;
+  let moved = 0;
+  for (const seed of ["setzen", "fahren", "nehmen"]) {
     perch(seed, 0);
     const prefixCount = shown("prefix").length;
     for (let p = 0; p < prefixCount; p++) {
       perch(seed, p);
-      for (const name of shown("stem").slice(0, 8)) {
+      for (const name of shown("stem").slice(0, 14)) {
         const before = perch(seed, p);
+        const wasLit = isLit(name);
         const item = [...win.document.querySelectorAll("#stem .item")].find((i) => i.textContent === name);
         if (!item) continue;
         item.click();
-        moves++;
         const after = state();
-        expect(`${before.prefix}/${before.kind} -> ${name}: ${after.prefix}/${after.kind}/${after.stem}`)
-          .toBe(`${before.prefix}/${before.kind} -> ${name}: ${before.prefix}/${before.kind}/${name}`);
+        // Either way the stem you clicked is the stem you get.
+        expect(`${name}: ${after.stem}`).toBe(`${name}: ${name}`);
+        if (wasLit) {
+          kept++;
+          expect(`lit ${before.prefix}/${before.kind} -> ${name}: ${after.prefix}/${after.kind}`)
+            .toBe(`lit ${before.prefix}/${before.kind} -> ${name}: ${before.prefix}/${before.kind}`);
+        } else {
+          moved++;
+          // A greyed row had no verb with that prefix, so it must have changed.
+          expect(`grey ${before.prefix} -> ${name}: same prefix? ${after.prefix === before.prefix && after.kind === before.kind}`)
+            .toBe(`grey ${before.prefix} -> ${name}: same prefix? false`);
+        }
       }
     }
   }
-  expect(moves).toBeGreaterThan(50);
+  expect(kept).toBeGreaterThan(20);
+  expect(moved).toBeGreaterThan(20);
 });
 
 test("spinning lands on a real verb, every time", () => {
