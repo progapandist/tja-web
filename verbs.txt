@@ -500,6 +500,7 @@ vorstoßen|t|to advance, to push forward|"in neue Bereiche vorstoßen" = to push
 stecken|f|to put, to stick (into); to be stuck|"da steckt mehr dahinter" = there's more to it|Der Schlüssel steckt.|etw+A in etw+A · kein Obj. (feststecken)|The key is in the lock.
 anstecken|t|to infect; to pin on; to light|"das steckt an" = it's catching, of laughter too|Er hat mich angesteckt.|jdn+A mit etw+D · sich+A|He gave me his bug.
 einstecken|t|to pocket; to plug in; to take (criticism)|"einstecken können" = to be able to take it|Steck das Ladegerät ein.|etw+A|Plug the charger in.
+feststecken|t|to be stuck|"im Stau feststecken" = to be stuck in traffic|Die Autos stecken auf der Straße fest.|kein Obj. · in/auf etw+D|The cars are stuck on the road.
 abstecken|t|to mark out, to stake out (limits)|"den Rahmen abstecken" – planning meetings|Wir stecken die Ziele ab.|etw+A|We're marking out the goals.
 verstecken|f|to hide|"Versteck spielen" = to play hide and seek|Er versteckt sich hinter Ausreden.|etw+A · sich+A vor jdm+D|He hides behind excuses.
 zustecken|t|to slip someone something|"er hat mir zwanzig Euro zugesteckt" = he slipped me twenty euros|Oma steckt den Kindern Geld zu.|jdm etw+A|Grandma slips the children money.
