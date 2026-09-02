@@ -174,6 +174,15 @@ function appPage(code) {
     head({ code, canonical, title: t.title, description, keywords: t.keywords, pathFor: appPath, jsonld }),
   );
   page = must(page, "<!--analytics-->", ANALYTICS);
+  // Empty at first paint, this widens the h1 the moment app.js fills it, which
+  // pushes the search box sideways and rewraps the header on a phone: 35% of
+  // pageloads were scoring a poor CLS on that one shift. app.js writes the
+  // same string at runtime, so stamping it here just makes the width honest.
+  page = must(
+    page,
+    '<span class="count" id="count"></span>',
+    `<span class="count" id="count">${escape(t.count(VERB_COUNT))}</span>`,
+  );
   // The crawler reads this static link; app.js writes the same one at runtime.
   page = must(
     page,
