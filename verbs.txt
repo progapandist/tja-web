@@ -485,6 +485,7 @@ absteigen|t|to descend; to be relegated; to stay (at a hotel)|"im Hotel absteige
 besteigen|f|to climb (a mountain); to board (a ship)|formal, mountaineering register|Sie bestiegen den Gipfel.|etw+A|They climbed the summit.|hat
 übersteigen|f|to exceed, to surpass|"die Kosten übersteigen das Budget" = the costs exceed the budget|Das übersteigt meine Vorstellungskraft.|etw+A|That's beyond my imagination.|hat
 zusteigen|t|to board later, to get on along the way|"noch jemand zugestiegen?" – the conductor's question|Noch jemand zugestiegen?|kein Obj.|Anyone else just boarded?
+nachsteigen|t|to chase after, to pursue (romantically)|"einem Mädchen nachsteigen" – a bit dated, half-teasing|Er steigt ihr seit Wochen nach.|jdm+D|He's been chasing her for weeks.
 
 =stoßen|to push, to bump|stößt|stieß|gestoßen|hat
 stoßen|f|to push, to shove; to bump into (auf +A: to come across)|"auf ein Problem stoßen" = to run into a problem|Ich bin auf einen Fehler gestoßen.|jdn/etw+A · auf etw+A (finden) · an etw+A|I came across a mistake.
