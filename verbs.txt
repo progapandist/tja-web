@@ -49,6 +49,7 @@ zugehen|t|to approach (auf +A); to close; to go on (of events)|"es geht dort lau
 losgehen|t|to set off; to start, to kick off|"jetzt geht's los!" = here we go!|Wann geht der Film los?|kein Obj.|When does the film start?
 untergehen|t|to sink; to set (sun); to be drowned out|"die Welt geht nicht unter" = it's not the end of the world|Die Sonne geht unter.|kein Obj.|The sun is setting.
 durchgehen|t|to go through, to review; to bolt (horse)|"jemandem etwas durchgehen lassen" = to let someone get away with it|Gehen wir die Liste noch mal durch.|etw+A · jdm etw+A durchgehen lassen|Let's go through the list again.
+hinterhergehen|t|to walk behind, to follow along behind|"der Hund geht ihm überall hinterher" – of a person or animal trailing you|Das Kind geht der Mutter hinterher.|jdm+D|The child walks along behind its mother.
 
 =stehen|to stand|steht|stand|gestanden|hat
 stehen|f|to stand; to be located; to suit someone|"das steht dir gut" = that looks good on you|Das Buch steht im Regal.|kein Obj. · jdm+D (kleiden)|The book is on the shelf.
