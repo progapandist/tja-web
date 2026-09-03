@@ -355,3 +355,15 @@ ${locales.map((c) => `    <xhtml:link rel="alternate" hreflang="${c}" href="${SI
 
 console.log(Object.values(stamped).join("  "));
 console.log(`pages: ${locales.length + 1} app, ${locales.length + 1} index · sitemap: ${urls.length} urls`);
+
+// The README's own count, kept honest by the build rather than by whoever
+// remembers. It is source, not output, so this rewrites the file in place and
+// says so — it only ever changes on a build that changed the verb list.
+const readme = readFileSync("README.md", "utf8");
+const counted = readme.replace(/^\d+ verbs over \d+ stems,/m, `${VERB_COUNT} verbs over ${STEM_COUNT} stems,`);
+if (counted === readme && !counted.includes(`${VERB_COUNT} verbs over ${STEM_COUNT} stems,`))
+  throw new Error("stamp: no count line in README.md");
+if (counted !== readme) {
+  writeFileSync("README.md", counted);
+  console.log(`README: ${VERB_COUNT} verbs over ${STEM_COUNT} stems`);
+}
