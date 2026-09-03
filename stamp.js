@@ -183,6 +183,11 @@ function appPage(code) {
     '<span class="count" id="count"></span>',
     `<span class="count" id="count">${escape(t.count(VERB_COUNT))}</span>`,
   );
+  page = must(
+    page,
+    '<span class="count wide-only" id="stems"></span>',
+    `<span class="count wide-only" id="stems"> · ${escape(t.stemsHeading(STEM_COUNT))}</span>`,
+  );
   // The crawler reads this static link; app.js writes the same one at runtime.
   page = must(
     page,

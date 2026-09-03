@@ -527,6 +527,7 @@ document.documentElement.lang = t.lang;
 document.title = t.title;
 document.querySelector('meta[name="description"]').content = t.description(verbs.length, stems.length);
 find("#count").textContent = t.count(verbs.length);
+find("#stems").textContent = ` · ${t.stemsHeading(stems.length)}`;
 find("#t-prefix").textContent = t.prefix;
 find("#t-stem").textContent = t.stem;
 query.placeholder = t.searchPlaceholder;
