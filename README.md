@@ -52,6 +52,10 @@ principal parts. The lines under it are its prefixed verbs.
 verb|separable t/f|official|colloquial|example|use|example in English|aux override
 ```
 
+`verbs.ru.txt` and `verbs.fr.txt` are positional overlays over the same list, so
+a new verb needs a line in each of them too, in the same place. `bun test` fails
+if one is missing.
+
 ## Keys
 
 | | |
