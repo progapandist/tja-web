@@ -1020,3 +1020,13 @@ abkochen|faire bouillir (l'eau) pour la purifier|vocabulaire du camping et de la
 verkochen|trop cuire, réduire jusqu'à se déliter|mésaventure de cuisine : « die Kartoffeln sind verkocht »|La soupe a complètement réduit.
 auskochen|stériliser en faisant bouillir ; manigancer, mijoter un plan (familier)|« was hast du da wieder ausgekocht? » = qu'est-ce que tu as encore manigancé ?|Ils ont mijoté un plan tous les deux.
 einkochen|conserver, mettre en conserve (fruits ou légumes)|le mot traditionnel de la cuisine familiale : « Marmelade einkochen »|Ma grand-mère fait des confitures tous les étés.
+
+=fügen|joindre, ajouter
+fügen|assembler, ajuster ; se plier, se soumettre (sich)|presque toujours réfléchi : « sich fügen » = rentrer dans le rang|Il se plie à la décision.
+einfügen|insérer, ajouter ; s'intégrer (sich)|IT : « kopieren und einfügen » = copier-coller|Insère une image ici.
+hinzufügen|ajouter (une remarque, un ingrédient)|« dem ist nichts hinzuzufügen » = il n'y a rien à ajouter|Elle a ajouté une remarque.
+anfügen|ajouter à la fin, joindre|registre écrit : une note ajoutée à un document|Je joins les chiffres ci-dessous.
+beifügen|joindre, annexer (à une lettre)|correspondance formelle : « beigefügt finden Sie… »|La facture est jointe.
+zufügen|infliger (un dommage, une douleur)|presque uniquement avec Schaden, Leid ou Schmerzen|Il lui a infligé de grandes souffrances.
+zusammenfügen|assembler, réunir|de pièces : meuble, indices, puzzle|Nous assemblons les pièces.
+verfügen|disposer de (über +A) ; ordonner, décréter|« über etwas verfügen » est le sens courant ; décréter est juridique|Elle a beaucoup d'expérience.

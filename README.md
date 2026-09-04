@@ -8,7 +8,7 @@ objects the verb takes.
 Hit "i'm feeling lucky" and the columns turn into a slot machine. The reels
 spin, you get a verb, you guess what it means.
 
-827 verbs over 95 stems, shared with
+835 verbs over 96 stems, shared with
 [the terminal version](https://github.com/progapandist/tja).
 
 ![Browsing](docs/browse.jpg)
