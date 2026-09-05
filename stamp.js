@@ -372,6 +372,26 @@ for (const code of [...locales, "root"]) {
   if (code !== "en") writeFileSync(dir + "manifest.webmanifest", manifest(which));
 }
 
+// ---- the service worker ----------------------------------------------------
+// Written last, because the list it precaches is every page and every hashed
+// asset this build just produced. The cache name is a hash of that list, so a
+// build that changes nothing does not evict a reader's cache, and one that
+// changes anything gets a fresh cache and drops the old.
+const precache = [
+  ...[...locales, "root"].flatMap((code) => {
+    const which = code === "root" ? "en" : code;
+    const dir = code === "root" ? "/" : `/${code}/`;
+    return [dir, `${dir}verbs/`, manifestPath(which)];
+  }),
+  "/404.html",
+  ...Object.values(stamped).map((versioned) => `/${versioned}`),
+];
+const unique = [...new Set(precache)];
+let sw = readFileSync(dist + "sw.js", "utf8");
+sw = must(sw, 'const CACHE = "tja-dev";', `const CACHE = "tja-${createHash("md5").update(unique.join()).digest("hex").slice(0, 8)}";`);
+sw = must(sw, "const ASSETS = [];", `const ASSETS = ${JSON.stringify(unique, null, 2)};`);
+writeFileSync(dist + "sw.js", sw);
+
 const today = new Date().toISOString().slice(0, 10);
 const urls = locales.flatMap((code) => [
   { loc: SITE + appPath(code), pathFor: appPath, priority: code === "en" ? "1.0" : "0.9" },

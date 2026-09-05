@@ -51,6 +51,13 @@
 <link rel="modulepreload" href="app.js">
 <link rel="modulepreload" href="data.js">
 <link rel="modulepreload" href="strings.js">
+<script>
+  // Registered on load, so fetching and installing the worker never competes
+  // with the first paint. It is what makes the installed app work on a plane.
+  if ("serviceWorker" in navigator) {
+    addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
+  }
+</script>
 <!--analytics-->
 </head>
 <body>

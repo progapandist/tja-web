@@ -37,10 +37,16 @@ only the tests touch it.
 | `app.js` | the columns, the card, the reels |
 | `style.css` | |
 | `server.js` | dev server with live reload, thirty lines |
+| `sw.js` | the offline cache; the build fills in what to precache |
+| `icon.html` | the source for the home-screen icons, shot by `make icons` |
 
 Forms come out of the stem rather than the file. A separable prefix moves to
 the end of the clause (`nimmt … an`) and keeps the `ge-` (`angenommen`). An
 inseparable one stays put and loses it (`übernommen`).
+
+Add to Home Screen installs it. The build writes a manifest per locale and
+`sw.js` precaches every page, both icon sizes and all three verb lists, so an
+installed copy opens and works with no connection.
 
 ## Adding verbs
 

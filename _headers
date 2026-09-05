@@ -18,6 +18,11 @@
 /verbs.fr.txt
   Cache-Control: public, max-age=31536000, immutable
 
+# The one .js without a content hash in its URL. A year of immutable would
+# freeze the worker — and with it the whole offline cache — on one build.
+/sw.js
+  Cache-Control: no-cache
+
 # Crawler files change without their URL changing, so they revalidate daily.
 /sitemap.xml
   Cache-Control: public, max-age=86400

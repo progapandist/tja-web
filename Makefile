@@ -4,7 +4,7 @@ PROJECT ?= tja
 # stays out of the upload. og.html is the source for og.png and does not ship.
 FILES := index.html 404.html style.css app.js data.js strings.js robots.txt og.png \
          verbs.txt verbs.ru.txt verbs.fr.txt _headers \
-         icon-180.png icon-192.png icon-512.png \
+         icon-180.png icon-192.png icon-512.png sw.js \
          googlec2338afcce487655.html
 
 .PHONY: dev test dist deploy og icons preview clean

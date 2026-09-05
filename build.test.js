@@ -334,3 +334,34 @@ test("every locale ships an installable manifest", () => {
     expect(html).toContain('<meta name="apple-mobile-web-app-capable" content="yes">');
   }
 });
+
+// addAll() is all-or-nothing: one URL that 404s rejects the install and the
+// reader is left with no worker and no offline at all, with nothing in the UI
+// to say so. So every precached URL has to resolve to something the build
+// actually wrote.
+test("the service worker precaches only files that exist", () => {
+  const sw = read("dist/sw.js");
+  const assets = JSON.parse(sw.match(/const ASSETS = (\[[\s\S]*?\]);/)[1]);
+  expect(assets.length).toBeGreaterThan(10);
+
+  for (const url of assets) {
+    const path = url.split("?")[0];
+    // A directory URL is served by its index.html.
+    const file = "dist" + (path.endsWith("/") ? `${path}index.html` : path);
+    expect(`${url}: ${existsSync(file)}`).toBe(`${url}: true`);
+  }
+
+  // Every page of the site, so the first offline load does not depend on where
+  // the reader happened to be when the connection went.
+  for (const code of locales) {
+    expect(assets).toContain(code === "en" ? "/" : `/${code}/`);
+    expect(assets).toContain(code === "en" ? "/verbs/" : `/${code}/verbs/`);
+  }
+  // The app itself, hashed, or an install caches a shell it cannot run.
+  expect(assets.some((u) => /^\/app\.js\?v=[0-9a-f]{8}$/.test(u))).toBe(true);
+  expect(assets.some((u) => /^\/verbs\.txt\?v=[0-9a-f]{8}$/.test(u))).toBe(true);
+
+  // A stale worker pins a stale cache for as long as the browser keeps it.
+  expect(read("dist/_headers")).toContain("/sw.js");
+  expect(read("dist/index.html")).toContain('navigator.serviceWorker.register("/sw.js")');
+});
