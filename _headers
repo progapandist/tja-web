@@ -7,7 +7,15 @@
 
 /*.css
   Cache-Control: public, max-age=31536000, immutable
-/*.js
+# Named one by one rather than as /*.js, because sw.js is also .js and must
+# not be immutable: Cloudflare merges every rule that matches a path, so the
+# two globs produced "immutable, no-cache" on the worker and left it to the
+# browser to decide which half to believe.
+/app.js
+  Cache-Control: public, max-age=31536000, immutable
+/data.js
+  Cache-Control: public, max-age=31536000, immutable
+/strings.js
   Cache-Control: public, max-age=31536000, immutable
 /*.png
   Cache-Control: public, max-age=31536000, immutable
@@ -20,6 +28,8 @@
 
 # The one .js without a content hash in its URL. A year of immutable would
 # freeze the worker — and with it the whole offline cache — on one build.
+# The browser bypasses its HTTP cache for the worker script on an update check
+# anyway; this is the belt to that pair of braces.
 /sw.js
   Cache-Control: no-cache
 

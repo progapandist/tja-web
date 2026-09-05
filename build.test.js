@@ -365,3 +365,21 @@ test("the service worker precaches only files that exist", () => {
   expect(read("dist/_headers")).toContain("/sw.js");
   expect(read("dist/index.html")).toContain('navigator.serviceWorker.register("/sw.js")');
 });
+
+// Cloudflare applies every _headers rule whose path matches, and merges what
+// they say. A /*.js glob therefore reached sw.js too and served it
+// "immutable, no-cache" — a year-long cache and a revalidate-always in one
+// header, with the browser left to pick. Every script the app runs is hashed
+// and immutable; the worker is neither.
+test("the service worker is the one script not served immutable", () => {
+  const headers = read("dist/_headers");
+  const rule = (path) => headers.split(`\n${path}\n`)[1]?.split("\n")[0] ?? "";
+
+  // A rule is a line of its own; the glob is named in the comment above it.
+  expect(headers.split("\n")).not.toContain("/*.js");
+  for (const file of ["/app.js", "/data.js", "/strings.js"]) {
+    expect(`${file}: ${rule(file)}`).toContain("immutable");
+  }
+  expect(rule("/sw.js")).toContain("no-cache");
+  expect(rule("/sw.js")).not.toContain("immutable");
+});
