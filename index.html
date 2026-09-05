@@ -12,6 +12,19 @@
      writing. Kept as a marker so the head stays readable in source. -->
 <!--seo-->
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>🎰</text></svg>">
+<!-- Installable: the manifest line is rewritten per locale by the build, so a
+     tile added from /ru/ opens /ru/. iOS ignores the manifest's icons for the
+     home screen and reads apple-touch-icon, so both are declared. -->
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta name="apple-mobile-web-app-title" content="tja">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<!-- default, not black-translucent: the header would otherwise run up under
+     the status bar. viewport-fit=cover above already keeps the safe areas. -->
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#edeae1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1d1c19" media="(prefers-color-scheme: dark)">
 <script>
   // Applied before the first paint, so the page never flashes the wrong theme.
   try {

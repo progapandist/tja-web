@@ -66,10 +66,13 @@ test("no asset URL is relative", () => {
 });
 
 // Without a content hash a browser can keep an old app.js and pair it with new
-// HTML, rendering a previous build with no sign anything is wrong.
+// HTML, rendering a previous build with no sign anything is wrong. The
+// manifest is the one exception: _headers does not serve it immutable, so it
+// revalidates like the HTML does, and its own URL has to stay stable — a phone
+// that installed the tile looks the manifest up again at the path it stored.
 test("every asset URL carries a content hash", () => {
   for (const page of [...allPages, "dist/app.js"]) {
-    for (const url of assets(page)) {
+    for (const url of assets(page).filter((u) => !u.endsWith(".webmanifest"))) {
       expect(`${page} → ${url}`).toMatch(/\?v=[0-9a-f]{8}$/);
     }
   }
@@ -301,5 +304,33 @@ test("the verb index carries every verb and every stem", async () => {
     // umgehen and übersetzen each cover two different verbs (separable and
     // inseparable, different meanings) — every link has to reach its own.
     expect(`${code}: ${new Set(links).size} distinct`).toBe(`${code}: ${verbs.length} distinct`);
+  }
+});
+
+// Installing to a home screen is a chain of small things, any one of which
+// silently turns the tile back into a bookmark: the manifest has to be linked
+// and parse, its start_url has to be the locale the reader installed from, and
+// iOS reads apple-touch-icon rather than any of the manifest's icons.
+test("every locale ships an installable manifest", () => {
+  for (const code of locales) {
+    const dir = code === "en" ? "dist" : `dist/${code}`;
+    const html = read(`${dir}/index.html`);
+    const href = html.match(/<link rel="manifest" href="([^"]+)">/)?.[1];
+    expect(`${code}: manifest link`).toBe(href ? `${code}: manifest link` : `${code}: missing`);
+
+    const m = JSON.parse(read(`dist${href}`));
+    expect(`${code}: start_url`).toBe(`${code}: ${m.start_url === (code === "en" ? "/" : `/${code}/`) ? "start_url" : m.start_url}`);
+    expect(m.display).toBe("standalone");
+    expect(m.scope).toBe("/");
+    expect(m.lang).toBe(code);
+    // A hashed URL is served immutable for a year, so it must actually exist.
+    for (const icon of m.icons) {
+      const file = `dist/${icon.src.split("?")[0].slice(1)}`;
+      expect(`${code}: ${icon.src}`).toBe(existsSync(file) ? `${code}: ${icon.src}` : `${code}: missing ${file}`);
+    }
+    const apple = html.match(/rel="apple-touch-icon" href="([^"]+)"/)?.[1];
+    expect(`${code}: apple-touch-icon`).toBe(apple ? `${code}: apple-touch-icon` : `${code}: missing`);
+    expect(existsSync(`dist/${apple.split("?")[0].slice(1)}`)).toBe(true);
+    expect(html).toContain('<meta name="apple-mobile-web-app-capable" content="yes">');
   }
 });

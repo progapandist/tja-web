@@ -49,7 +49,8 @@ const stamped = {};
 
 // The leaves first: app.js imports data.js and strings.js, so its own hash only
 // settles once their URLs are written into it.
-for (const file of ["data.js", "strings.js", "style.css", "og.png", "verbs.txt", ...overlays]) {
+const icons = ["icon-180.png", "icon-192.png", "icon-512.png"];
+for (const file of ["data.js", "strings.js", "style.css", "og.png", ...icons, "verbs.txt", ...overlays]) {
   stamped[file] = `${file}?v=${hash(file)}`;
 }
 
@@ -80,6 +81,7 @@ for (const [file, versioned] of Object.entries(stamped)) {
 // competing with it for the same words.
 const appPath = (code) => (code === "en" ? "/" : `/${code}/`);
 const docPath = (code) => (code === "en" ? "/verbs/" : `/${code}/verbs/`);
+const manifestPath = (code) => (code === "en" ? "/manifest.webmanifest" : `/${code}/manifest.webmanifest`);
 
 const alternates = (pathFor) =>
   [
@@ -188,6 +190,9 @@ function appPage(code) {
     '<span class="count wide-only" id="stems"></span>',
     `<span class="count wide-only" id="stems"> · ${escape(t.stemsHeading(STEM_COUNT))}</span>`,
   );
+  // One manifest per locale, so a tile installed from /fr/ opens /fr/ and calls
+  // itself by the French name rather than reopening the English app.
+  page = must(page, '<link rel="manifest" href="/manifest.webmanifest">', `<link rel="manifest" href="${manifestPath(code)}">`);
   // The crawler reads this static link; app.js writes the same one at runtime.
   page = must(
     page,
@@ -322,6 +327,37 @@ ${sections}
 `;
 }
 
+// ---- the manifest ----------------------------------------------------------
+// What makes the page installable. scope is the whole site rather than the
+// locale, so switching language inside an installed tile stays in the app
+// instead of kicking the reader out to a browser tab.
+function manifest(code) {
+  const t = ui[code];
+  return JSON.stringify(
+    {
+      name: t.title,
+      short_name: "tja",
+      description: t.description(VERB_COUNT, STEM_COUNT),
+      lang: t.lang,
+      start_url: appPath(code),
+      scope: "/",
+      display: "standalone",
+      orientation: "any",
+      background_color: "#edeae1",
+      theme_color: "#edeae1",
+      icons: [
+        { src: `/${stamped["icon-192.png"]}`, sizes: "192x192", type: "image/png" },
+        { src: `/${stamped["icon-512.png"]}`, sizes: "512x512", type: "image/png" },
+        // The marks sit well inside the middle, so the same square survives
+        // Android's circle mask without a second drawing.
+        { src: `/${stamped["icon-512.png"]}`, sizes: "512x512", type: "image/png", purpose: "maskable" },
+      ],
+    },
+    null,
+    2,
+  );
+}
+
 // ---- write -----------------------------------------------------------------
 // The root is English; every locale also gets its own directory, /en/ included,
 // so no path 404s and the canonical sorts out which one ranks.
@@ -331,6 +367,9 @@ for (const code of [...locales, "root"]) {
   mkdirSync(dir + "verbs/", { recursive: true });
   writeFileSync(dir + "index.html", appPage(which));
   writeFileSync(dir + "verbs/index.html", docPage(which));
+  // The root and /en/ share one manifest at /manifest.webmanifest, so only the
+  // other locales write their own into their directory.
+  if (code !== "en") writeFileSync(dir + "manifest.webmanifest", manifest(which));
 }
 
 const today = new Date().toISOString().slice(0, 10);

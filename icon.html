@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- The source for the home-screen icons. Rendered by `make icons`, which
+     shoots it with headless Chrome at each size the manifest asks for; the
+     PNGs are what ship. Same palette and same three marks as the site, so the
+     tile on a phone is recognisably the page it opens. -->
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --paper: #edeae1;
+    --ink: #1d1c19;
+    --red: #ab5340;
+    --blue: #46617a;
+    --yellow: #c2a04e;
+    --sans: Futura, "Century Gothic", "Avenir Next", system-ui, sans-serif;
+  }
+  /* Everything is a share of the viewport, so one file renders every size. */
+  body {
+    width: 100vw;
+    height: 100vw;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 7vw;
+    overflow: hidden;
+  }
+  /* iOS masks the corners off, so nothing sits in the outer eighth. */
+  .marks { display: flex; align-items: flex-end; gap: 6vw; }
+  .marks i { width: 15vw; height: 15vw; display: block; }
+  .circle { background: var(--red); border-radius: 50%; }
+  .triangle {
+    width: 0 !important; height: 0 !important;
+    border-left: 7.5vw solid transparent;
+    border-right: 7.5vw solid transparent;
+    border-bottom: 14vw solid var(--yellow);
+  }
+  .square { background: var(--blue); }
+  .word { font-size: 34vw; font-weight: 700; letter-spacing: -0.03em; line-height: 0.8; }
+</style>
+</head>
+<body>
+  <span class="marks"><i class="circle"></i><i class="triangle"></i><i class="square"></i></span>
+  <span class="word">tja</span>
+</body>
+</html>
